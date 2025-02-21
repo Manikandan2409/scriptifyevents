@@ -11,6 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.heremanikandan.scriptifyevents.scenes.SignUpScreen
+import com.heremanikandan.scriptifyevents.scenes.SplashScreen
+import com.heremanikandan.scriptifyevents.scenes.WelcomeScreen
 import com.heremanikandan.scriptifyevents.ui.theme.ScriptifyeventsTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +25,26 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ScriptifyeventsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            MyApp()
+
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MyApp() {
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ScriptifyeventsTheme {
-        Greeting("Android")
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
+        composable(Screen.Splash.route) {
+            SplashScreen(navController)
+        }
+        composable(Screen.Welcome.route) {
+            WelcomeScreen(navController)
+        }
+        composable(Screen.SignUp.route){
+            SignUpScreen(navController = navController)
+        }
     }
 }
