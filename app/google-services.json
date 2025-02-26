@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "989348516741",
+    "project_id": "scriptifyevents-c2d5d",
+    "storage_bucket": "scriptifyevents-c2d5d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989348516741:android:a88c22e78dd3ac731feaec",
+        "android_client_info": {
+          "package_name": "com.heremanikandan.scriptifyevents"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "989348516741-mr36q6efv355v7rjhk073o8bu0tp2hkt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.heremanikandan.scriptifyevents",
+            "certificate_hash": "1d38763267c70e400a32ca930c7141be1136c099"
+          }
+        },
+        {
+          "client_id": "989348516741-urntm6m3vgf22km9805809trdv4frhki.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoxZWEt8btfj5HPyCRk3kVYxjEy1RGe4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "989348516741-urntm6m3vgf22km9805809trdv4frhki.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

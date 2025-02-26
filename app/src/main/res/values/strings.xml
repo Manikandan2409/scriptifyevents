@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">scriptifyevents</string>
+    <string name="default_web_client_id">989348516741-urntm6m3vgf22km9805809trdv4frhki.apps.googleusercontent.com</string>
+
 </resources>

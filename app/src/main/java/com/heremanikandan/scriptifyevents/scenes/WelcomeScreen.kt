@@ -1,20 +1,20 @@
 package com.heremanikandan.scriptifyevents.scenes
 
+import android.annotation.SuppressLint
+
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -22,31 +22,46 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.Screen
+import com.heremanikandan.scriptifyevents.auth.AuthManager
 import com.heremanikandan.scriptifyevents.ui.theme.StardosStencil
 import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
-import com.heremanikandan.scriptifyevents.viewModel.LoginViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+
+
+@SuppressLint("RememberReturnType")
 @Composable
-fun WelcomeScreen(navController: NavController,viewModel: LoginViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsState()
+fun WelcomeScreen(navController: NavController) {
+    val context = LocalContext.current
+
+
+    val authManager = remember { AuthManager(context) }
+
+    /** 🔹 State Variables */
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary),
         contentAlignment = Alignment.TopCenter
-    ) {
-        // Decorative Assets at Edges
+    ){
         Image(
             painter = painterResource(id = R.drawable.tl),
             contentDescription = "Top Left Decoration",
             modifier = Modifier
-                .size(100.dp)
-                .align(Alignment.TopStart)
+                .size(250.dp)
+                // .align(Alignment.TopStart)
+                .offset(x = (-50).dp, y = (-20).dp)
         )
         Image(
             painter = painterResource(id = R.drawable.tr),
@@ -55,7 +70,6 @@ fun WelcomeScreen(navController: NavController,viewModel: LoginViewModel = viewM
                 .size(100.dp)
                 .align(Alignment.TopEnd)
         )
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
@@ -63,7 +77,6 @@ fun WelcomeScreen(navController: NavController,viewModel: LoginViewModel = viewM
             Spacer(modifier = Modifier.height(160.dp))
 
             // Heading with Logo
-
 
             Text(
                 text = "SCRIPTIFY",
@@ -109,99 +122,99 @@ fun WelcomeScreen(navController: NavController,viewModel: LoginViewModel = viewM
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // EMAIL TEXTFIELD
+                    // 📨 Email Input Field
                     OutlinedTextField(
-                        value = uiState.email,
-                        onValueChange = { viewModel.onEmailChanged(it) },
-                        label = { Text("Email") },
-                        isError = uiState.emailError.isNotEmpty(),
-                        shape = RoundedCornerShape(15.dp), // Rounded corners
-                        singleLine = false,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    if (uiState.emailError.isNotEmpty()) {
-                        Text(
-                            text = uiState.emailError,
-                            color = Color.Red,
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // PASSWORD TEXTFIELD
-                    OutlinedTextField(
-                        value = uiState.password,
-                        onValueChange = { viewModel.onPasswordChanged(it) },
-                        label = { Text("Password") },
-                        isError = uiState.passwordError.isNotEmpty(),
-                        shape = RoundedCornerShape(15.dp),
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    if (uiState.passwordError.isNotEmpty()) {
-                        Text(
-                            text = uiState.passwordError,
-                            color = Color.Red,
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // FORGOT PASSWORD
-                    Text(
-                        text = "Forgot Password?",
-                        fontSize = 14.sp,
-                        color = Color.Blue,
-                        modifier = Modifier.clickable { /* Navigate to Forgot Password */ }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // SUBMIT BUTTON
-                    Button(
-                        onClick = {
-                            viewModel.onSubmit()
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            emailError = validateEmail(it)
                         },
+                        label = { Text("Email") },
+                        isError = emailError != null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            .height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Yellow60,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                    emailError?.let {
+                        Text(
+                            it,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
                         )
-                    ) {
-                        Text(text = "Submit", fontWeight = FontWeight.Bold)
+                    }
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 🔑 Password Input Field
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            passwordError = validatePassword(it)
+                        },
+                        label = { Text("Password") },
+                        isError = passwordError != null,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                    passwordError?.let {
+                        Text(
+                            it,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // SIGN UP TEXT
-                    Text(
-                        text = "Don't have an account?",
-                        fontSize = 14.sp,
-                        color = Color.Blue,
-                        modifier = Modifier.clickable {
-                            navController.navigate(Screen.SignUp.route)
-
-                        }
-                    )
+                    // ✅ Email Sign-In Button
+                    Button(
+                        onClick = {
+                            if (validateInputs(email, password)) {
+                                isLoading = true
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val success = authManager.signInWithEmail(email, password)
+                                    isLoading = false
+                                    if (success) navController.navigate(Screen.Dashboard.route)
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        enabled = !isLoading
+                    ) {
+                        Text(text = "Sign In")
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // GOOGLE SIGN-IN BUTTON
+                    // 🔹 Google Sign-In Button
                     Button(
-                        onClick = { /* Google Sign-In */ },
-                        colors = ButtonDefaults.buttonColors(containerColor =MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onTertiary)
+                        onClick = {
+                            isLoading = true
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val success = authManager.signInWithGoogle()
+                                isLoading = false
+                                if (success) navController.navigate(Screen.Dashboard.route)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        enabled = !isLoading, colors = ButtonDefaults.buttonColors(
+                            containerColor = Yellow60,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+
+
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.google_icon),
+                            painter = painterResource(id = com.heremanikandan.scriptifyevents.R.drawable.google_icon),
                             contentDescription = "Google Icon",
                             modifier = Modifier.size(20.dp)
                         )
@@ -210,6 +223,25 @@ fun WelcomeScreen(navController: NavController,viewModel: LoginViewModel = viewM
                     }
                 }
             }
-        }
+            }
+                
     }
+
+}
+
+/** 🔹 Helper Functions for Input Validation */
+fun validateEmail(email: String): String? {
+    return if (email.isEmpty()) "Email cannot be empty"
+    else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) "Invalid email format"
+    else null
+}
+
+fun validatePassword(password: String): String? {
+    return if (password.isEmpty()) "Password cannot be empty"
+    else if (password.length < 6) "Password must be at least 6 characters"
+    else null
+}
+
+fun validateInputs(email: String, password: String): Boolean {
+    return validateEmail(email) == null && validatePassword(password) == null
 }
