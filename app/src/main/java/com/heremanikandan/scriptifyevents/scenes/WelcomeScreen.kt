@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -168,7 +169,15 @@ fun WelcomeScreen(navController: NavController) {
                             fontSize = 12.sp
                         )
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
 
+                    // FORGOT PASSWORD
+                    Text(
+                        text = "Forgot Password?",
+                        fontSize = 14.sp,
+                        color = Color.Blue,
+                        modifier = Modifier.clickable { /* Navigate to Forgot Password */ }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // ✅ Email Sign-In Button
@@ -190,6 +199,18 @@ fun WelcomeScreen(navController: NavController) {
                     ) {
                         Text(text = "Sign In")
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // SIGN UP TEXT
+                    Text(
+                        text = "Don't have an account?",
+                        fontSize = 14.sp,
+                        color = Color.Blue,
+                        modifier = Modifier.clickable {
+                            navController.navigate(Screen.SignUp.route)
+
+                        }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 

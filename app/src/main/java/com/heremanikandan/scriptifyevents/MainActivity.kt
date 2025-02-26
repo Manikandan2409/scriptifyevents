@@ -6,10 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.heremanikandan.scriptifyevents.scenes.Dashboard
+import com.heremanikandan.scriptifyevents.scenes.OtpVerificationScreen
 import com.heremanikandan.scriptifyevents.scenes.SignUpScreen
 import com.heremanikandan.scriptifyevents.scenes.SplashScreen
 import com.heremanikandan.scriptifyevents.scenes.WelcomeScreen
@@ -50,5 +52,11 @@ fun MyApp() {
         composable(Screen.Dashboard.route){
             Dashboard(navController = navController)
         }
+        composable(Screen.OtpVerification.route) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            OtpVerificationScreen(email = email,navController)
+        }
+
     }
 }
+
