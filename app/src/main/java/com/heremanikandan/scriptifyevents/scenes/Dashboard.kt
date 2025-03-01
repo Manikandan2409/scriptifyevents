@@ -9,12 +9,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun Dashboard(navController: NavController){
+    val context = LocalContext.current
+    val sharedPrefManager = SharedPrefManager(context)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -24,7 +28,7 @@ fun Dashboard(navController: NavController){
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text(text = "Hello, Compose!", fontSize = 24.sp)
+            Text(text = "Hello, ${sharedPrefManager.getUserName()}  , ${sharedPrefManager.getUserEmail()}", fontSize = 24.sp)
         }
 
     }

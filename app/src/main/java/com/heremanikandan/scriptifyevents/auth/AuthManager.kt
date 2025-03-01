@@ -1,29 +1,17 @@
+
 package com.heremanikandan.scriptifyevents.auth
 
-import android.app.Activity
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.Scopes
-import com.google.android.gms.common.api.Scope
-import com.google.api.services.gmail.GmailScopes
-import com.google.api.services.sheets.v4.SheetsScopes
-
-import com.google.api.services.calendar.CalendarScopes;
-import com.google.api.services.slides.v1.SlidesScopes
 import android.content.Context
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
-import androidx.navigation.NavController
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
@@ -34,7 +22,14 @@ class AuthManager(private val context: Context) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val credentialManager: CredentialManager = CredentialManager.create(context)
     private val sharedPrefManager = SharedPrefManager(context)
-    private  val GOOGLE_SIGN_IN_REQUEST_CODE by lazy { 0 }01
+
+    companion object {
+        private const val GOOGLE_SIGN_IN_REQUEST_CODE = 101
+    }
+
+    /**
+     * Sign Up or Sign In with Google and Request Extra Permissions
+     */
     suspend fun signInWithGoogle(): Boolean {
         return try {
             val nonce = UUID.randomUUID().toString()
@@ -42,12 +37,23 @@ class AuthManager(private val context: Context) {
             val hashedNonce = digest.joinToString("") { "%02x".format(it) }
 
             val googleIdOption = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(context.getString(com.heremanikandan.scriptifyevents.R.string.default_web_client_id))
+                .setFilterByAuthorizedAccounts(false) // New users only
+                .setServerClientId(context.getString(R.string.default_web_client_id))
                 .setNonce(hashedNonce)
                 .setAutoSelectEnabled(false)
-                
+                .setAutoSelectEnabled(true)
+//                .setAdditionalScopes( // ✅ Use this for requesting extra permissions
+//                    listOf(
+//                        Scope(Scopes.DRIVE_FILE),
+//                        Scope(GmailScopes.GMAIL_READONLY),
+//                        Scope(GmailScopes.GMAIL_COMPOSE),
+//                        Scope(CalendarScopes.CALENDAR),
+//                        Scope(SheetsScopes.SPREADSHEETS),
+//                        Scope(SlidesScopes.PRESENTATIONS)
+//                    )
+//                )
                 .build()
+
 
             val request = GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
@@ -66,7 +72,14 @@ class AuthManager(private val context: Context) {
                 val result = auth.signInWithCredential(authCredential).await()
 
                 val user = auth.currentUser
-                sharedPrefManager.saveUser(user?.displayName, user?.email)
+
+                sharedPrefManager.saveUser(uid = user?.uid,
+                    name = user?.displayName,
+                    email = user?.email,
+                    photoUrl = user?.photoUrl)
+
+                // Store Permissions in Firebase
+                storeUserPermissions(user?.uid, user?.email)
 
                 Log.d("Auth", "User Signed In: ${user?.email}")
                 return true
@@ -78,10 +91,71 @@ class AuthManager(private val context: Context) {
         }
     }
 
+    /**
+     * Store granted permissions in Firebase
+     */
+    private fun storeUserPermissions(uid: String?, email: String?) {
+        uid?.let {
+            val userRef = FirebaseDatabase.getInstance().getReference("users").child(it)
+            val userData = mapOf(
+                "email" to email,
+                "permissions" to listOf(
+                    "drive_file",
+                    "gmail_read",
+                    "gmail_compose",
+                    "calendar",
+                    "sheets",
+                    "slides"
+                )
+            )
+            userRef.setValue(userData)
+        }
+    }
+
+    /**
+     * Sign in with Credential Manager (Returning Users)
+     */
+    suspend fun signInWithCredentialManager(): Boolean {
+        return try {
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(true) // Existing users only
+                .setServerClientId(context.getString(com.heremanikandan.scriptifyevents.R.string.default_web_client_id))
+                .setAutoSelectEnabled(true)
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            val result = credentialManager.getCredential(context, request)
+            val credential = result.credential
+
+            if (credential is CustomCredential &&
+                credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val idToken = googleIdTokenCredential.idToken
+
+                val authCredential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(authCredential).await()
+
+                Log.d("Auth", "User Authorized: ${auth.currentUser?.email}")
+                return true
+            }
+            false
+        } catch (e: Exception) {
+            Log.e("Auth", "Credential Manager Sign-In Error: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Sign Up / Sign In with Email & Password
+     */
     suspend fun signInWithEmail(email: String, password: String): Boolean {
         return try {
             auth.signInWithEmailAndPassword(email, password).await()
-            sharedPrefManager.saveUser(auth.currentUser?.displayName, email)
+            sharedPrefManager.saveUser(uid = auth.currentUser?.uid, name = auth.currentUser?.displayName, email=email, photoUrl = auth.currentUser?.photoUrl)
             true
         } catch (e: Exception) {
             Log.e("Auth", "Email Sign-In Error: ${e.message}")
@@ -89,44 +163,39 @@ class AuthManager(private val context: Context) {
         }
     }
 
+    /**
+     * Sign Out
+     */
     fun signOut() {
         auth.signOut()
         sharedPrefManager.clearUserData()
     }
 
-
+    /**
+     * Check if Email Exists
+     */
     fun checkUserExists(email: String, onResult: (Boolean) -> Unit) {
         FirebaseAuth.getInstance().fetchSignInMethodsForEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val signInMethods = task.result?.signInMethods
-                    if (signInMethods.isNullOrEmpty()) {
-                        onResult(false) // New user
-                    } else {
-                        onResult(true) // Existing user
-                    }
+                    onResult(!signInMethods.isNullOrEmpty()) // true if email exists
                 } else {
-                    onResult(false) // Handle error case
+                    onResult(false)
                 }
             }
     }
 
+    /**
+     * Generate OTP for Email Sign-Up
+     */
     fun generateOTP(): String {
-        return (100000..999999).random().toString() // 6-digit OTP
+        return (100000..999999).random().toString()
     }
 
-//    fun storeOtpInFirebase(email: String, otp: String) {
-//        val database = FirebaseDatabase.getInstance().reference
-//        val otpRef = database.child("otp_verifications").child(email.replace(".", ","))
-//
-//        val otpData = mapOf(
-//            "otp" to otp,
-//            "timestamp" to System.currentTimeMillis()
-//        )
-//    println(otpData)
-//        //otpRef.setValue(otpData)
-//        otpRef.setValue(otpData)
-//    }
+    /**
+     * Store OTP in Firebase
+     */
     fun storeOtpInFirebase(email: String, otp: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
         val database = FirebaseDatabase.getInstance().reference
         val otpRef = database.child("otp_verifications").child(email.replace(".", ","))
@@ -137,94 +206,27 @@ class AuthManager(private val context: Context) {
         )
 
         otpRef.setValue(otpData)
-            .addOnSuccessListener {
-                // OTP stored successfully
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                // Failed to store OTP
-                onFailure(exception)
-            }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
     }
 
-    fun verifyOtp(email: String, enteredOtp: String, callback: (String?, String?) -> Unit) {
-        val TAG = "OTP VERIFICATION"
-        val database = FirebaseDatabase.getInstance().getReference("otp_verifications").child(email.replace(".", ","))
-
-        database.get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                val storedOtp = snapshot.child("otp").getValue(String::class.java) // Get the OTP field
-                Log.d(TAG, "verifyOtp: $storedOtp -- entered otp: $enteredOtp")
-                if (storedOtp != null && storedOtp == enteredOtp) {
-                    Log.d(TAG, "OTP VERIFIED")
-                    callback("OTP Verified Successfully", null)
-                } else {
-                    Log.d(TAG, "INVALID OTP")
-                    callback(null, "Invalid OTP. Please try again.")
-                }
-            } else {
-                Log.d(TAG, "No OTP found for this email")
-                callback(null, "OTP not found. Please request a new OTP.")
-            }
-        }.addOnFailureListener { exception ->
-            callback(null, "Error verifying OTP: ${exception.message}")
-            Log.d(TAG, "ERROR VERIFYING OTP", exception)
-        }
-    }
-
-    /*  TODO check the file permission for calendar and slides */
-    fun requestGooglePermissions(email: String, navController: NavController) {
-        val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestScopes(
-                Scope(Scopes.DRIVE_FILE),
-                Scope(Scopes.DRIVE_APPFOLDER),
-                Scope(GmailScopes.GMAIL_READONLY),
-                Scope(GmailScopes.GMAIL_COMPOSE),
-                Scope(CalendarScopes.CALENDAR),
-                Scope(SheetsScopes.SPREADSHEETS),
-                Scope(SlidesScopes.PRESENTATIONS)
-            )
-            .build()
-
-        val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
-        val signInIntent = googleSignInClient.signInIntent
-        (context as Activity).startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE)
-    }
-
-
-    fun checkEmailExists(inputEmail: String, onResult: (Boolean) -> Unit) {
-        FirebaseAuth.getInstance().fetchSignInMethodsForEmail(inputEmail)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val signInMethods = task.result?.signInMethods
-                    onResult(!signInMethods.isNullOrEmpty()) // Returns `true` if email exists, `false` if not
-                } else {
-                    onResult(false) // Consider treating errors as non-existent emails
-                }
-            }
-    }
-
+    /**
+     * Verify OTP
+     */
     fun verifyOtp(email: String, enteredOtp: String, onResult: (Boolean) -> Unit) {
         val database = FirebaseDatabase.getInstance().reference
         val otpRef = database.child("otp_verifications").child(email.replace(".", ","))
 
-        otpRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val storedOtp = snapshot.child("otp").value?.toString()
-                val timestamp = snapshot.child("timestamp").value as? Long
-                val currentTime = System.currentTimeMillis()
+        otpRef.get().addOnSuccessListener { snapshot ->
+            val storedOtp = snapshot.child("otp").value?.toString()
+            val timestamp = snapshot.child("timestamp").value as? Long
+            val currentTime = System.currentTimeMillis()
 
-                if (storedOtp == enteredOtp && timestamp != null && (currentTime - timestamp) <= 2 * 60 * 1000) {
-                    onResult(true) // OTP is correct and within 2-minute validity
-                } else {
-                    onResult(false) // Invalid or expired OTP
-                }
+            if (storedOtp == enteredOtp && timestamp != null && (currentTime - timestamp) <= 2 * 60 * 1000) {
+                onResult(true) // OTP is correct and within 2-minute validity
+            } else {
+                onResult(false) // Invalid or expired OTP
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                onResult(false)
-            }
-        })
+        }.addOnFailureListener { onResult(false) }
     }
 }

@@ -49,6 +49,7 @@ android {
             excludes += "/META-INF/LICENSE.md"
             excludes += "/META-INF/AL2.0"
             excludes += "/META-INF/LGPL2.1"
+            excludes +="/META-INF/DEPENDENCIES"
         }
     }
 
@@ -94,7 +95,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 
-
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     // mailer
     implementation ("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")
@@ -107,6 +108,7 @@ dependencies {
     implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
 
     // Google Calendar API
+
     //implementation("com.google.apis:google-api-services-calendar:v3-rev305-1.25.0")
     implementation ("com.google.apis:google-api-services-calendar:v3-rev20220715-2.0.0")
 

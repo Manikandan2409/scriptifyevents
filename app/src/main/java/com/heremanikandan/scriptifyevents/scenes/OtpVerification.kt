@@ -1,7 +1,6 @@
 package com.heremanikandan.scriptifyevents.scenes
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +47,6 @@ import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
 import com.heremanikandan.scriptifyevents.utils.generateOtp
 import com.heremanikandan.scriptifyevents.utils.sendOTP
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,11 +176,14 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
             Button(
                 onClick = {
                     Log.d("OTP ENTEREd","OTP VALUE : $otp")
-                    authManager.verifyOtp(email, otp.joinToString("")) { success, error ->
-                        if (error != null) {
-                            errorMessage = error
-                        } else {
+                    authManager.verifyOtp(email, otp.joinToString("")) { success ->
+                        if (success) {
+                            // OTP verification succeeded, navigate to the dashboard or perform further actions
                             navController.navigate(Screen.Dashboard.route)
+                            //authManager.sign
+                        } else {
+                            // OTP verification failed, handle the error (e.g., show error message)
+                            errorMessage = "Invalid OTP or OTP expired."
                         }
                     }
                 },

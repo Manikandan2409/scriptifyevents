@@ -58,10 +58,9 @@ fun SignUpScreen(navController: NavController) {
     fun generateAndSendOTP(email: String) {
         isLoading = true
 
-
         coroutineScope.launch {
             try {
-            val otp = generateOtp()
+                val otp = generateOtp()
                 sendOTP(email, otp,
                     onSuccess = {
                         println("✅ OTP Email sent successfully!")
@@ -69,7 +68,6 @@ fun SignUpScreen(navController: NavController) {
                             onSuccess = {
                                 Log.d("Firebase", "OTP stored successfully!")
                                 navController.navigate(Screen.OtpVerification.createRoute(email))
-
                             },
                             onFailure = { exception ->
                                 Log.e("Firebase", "Error storing OTP: ${exception.message}")
@@ -77,16 +75,9 @@ fun SignUpScreen(navController: NavController) {
                         )
                     },
                     onFailure = { exception ->
-
                         println("❌ Failed to send OTP: ${exception.message}")
                     }
                 ) // Call your existing sendOTP function
-
-
-
-                // Show success message and navigate to OTP verification
-                //Toast.makeText(context, "OTP sent to $email", Toast.LENGTH_SHORT).show()
-                //navController.navigate(Screen.OtpVerification.route + "/$email/$otp")
             } catch (e: Exception) {
                 Toast.makeText(context, "Failed to send OTP", Toast.LENGTH_SHORT).show()
             } finally {
@@ -95,10 +86,11 @@ fun SignUpScreen(navController: NavController) {
         }
     }
 
+
     fun checkEmailExistsAndProceed(inputEmail: String) {
         isLoading = true
 
-        authManager.checkEmailExists(inputEmail) { emailExists ->
+        authManager.checkUserExists(inputEmail) { emailExists ->
             isLoading = false
             if (emailExists) {
                 emailStatus = "Already exists"
