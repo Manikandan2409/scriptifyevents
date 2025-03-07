@@ -168,7 +168,7 @@ class AuthManager(private val context: Context) {
      */
     fun signOut() {
         auth.signOut()
-        sharedPrefManager.clearUserData()
+        sharedPrefManager.signOut()
     }
 
     /**

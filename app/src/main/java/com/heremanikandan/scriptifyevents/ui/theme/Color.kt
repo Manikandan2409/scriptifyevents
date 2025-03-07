@@ -17,16 +17,19 @@ val Green60=Color(0xFF7AC460)
 val Yellow60 =Color(0xFFFFC059)
 
 // 🌙 Dark Theme Colors
-val dark = Color(0xFF333333) // Fix: Added `FF` for full opacity
+val dark = Color(0xFF222222) // Fix: Added `FF` for full opacity
 val light_dark = Color(0xFF444444)
 val dark_placeholder = Color(0xFF878181)
 val dark_component = Color(0xFF434343)
-
+val bar_component = Color(0xFF434343)
+val dark_topBar=Color(0xFF222222)
+val dark_text =Color(0xFFFFFBFE)
 // ☀️ Light Theme Colors
 val light = Color(0xFFFFFFFF) // Fix: Added `FF` to ensure white
 val light_light = Color(0xFFF1F1F1)
 val light_placeholder = Color(0xFF696666)
 val light_components = Color(0xFFF1F1F1)
+val light_topBarComponent = Color(0xFF)
 
 
 

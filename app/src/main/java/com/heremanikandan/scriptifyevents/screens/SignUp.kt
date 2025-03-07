@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.heremanikandan.scriptifyevents.scenes
+package com.heremanikandan.scriptifyevents.screens
 
 import android.annotation.SuppressLint
 import android.util.Log

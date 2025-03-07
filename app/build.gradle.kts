@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 
 android {
@@ -76,7 +77,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
 
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    // Jetpack Compose dependencies
+    implementation("androidx.compose.ui:ui:1.7.8")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
 
 
 
@@ -90,10 +95,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // Jetpack Compose dependencies
-    implementation("androidx.compose.ui:ui:1.7.8")
-    implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     // mailer
@@ -118,5 +119,28 @@ dependencies {
 //    implementation("com.google.apis:google-api-services-slides:v1-rev20220523-1.32.1")
     implementation("com.google.apis:google-api-services-slides:v1-rev20210820-1.32.1")
 
+
+    // Compose Navigation
+    //implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation ("androidx.navigation:navigation-compose:2.7.7")
+
+    // Icons and Image Loading
+    implementation ("androidx.compose.material:material-icons-extended:1.6.3")
+
+    // Coil for Image Loading (optional for profile image)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1") // For annotation processing
+
+    // Kotlin Extensions & Coroutines Support
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // Optional: If you use RxJava with Room
+    implementation("androidx.room:room-rxjava3:2.6.1")
+
+    // Optional: If you use Paging with Room
+    implementation("androidx.room:room-paging:2.6.1")
 
 }

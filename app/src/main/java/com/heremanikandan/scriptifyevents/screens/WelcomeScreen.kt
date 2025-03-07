@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.scenes
+package com.heremanikandan.scriptifyevents.screens
 
 import android.annotation.SuppressLint
 import android.util.Patterns
@@ -38,7 +38,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -73,7 +72,7 @@ fun WelcomeScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
+            .background(MaterialTheme.colorScheme.onPrimary),
         contentAlignment = Alignment.TopCenter
     ){
         Image(
@@ -155,7 +154,7 @@ fun WelcomeScreen(navController: NavController) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp).background(color = MaterialTheme.colorScheme.secondary)
                     )
                     emailError?.let {
                         Text(
@@ -180,7 +179,7 @@ fun WelcomeScreen(navController: NavController) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp).background(color = MaterialTheme.colorScheme.secondary)
                     )
                     passwordError?.let {
                         Text(
@@ -255,6 +254,10 @@ fun WelcomeScreen(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Yellow60,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
                         enabled = !isLoading,
 
                     ) {

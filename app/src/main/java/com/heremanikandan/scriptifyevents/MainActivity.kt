@@ -6,15 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.heremanikandan.scriptifyevents.scenes.Dashboard
-import com.heremanikandan.scriptifyevents.scenes.OtpVerificationScreen
-import com.heremanikandan.scriptifyevents.scenes.SignUpScreen
-import com.heremanikandan.scriptifyevents.scenes.SplashScreen
-import com.heremanikandan.scriptifyevents.scenes.WelcomeScreen
+import com.heremanikandan.scriptifyevents.screens.Dashboard
+import com.heremanikandan.scriptifyevents.screens.OtpVerificationScreen
+import com.heremanikandan.scriptifyevents.screens.SignUpScreen
+import com.heremanikandan.scriptifyevents.screens.SplashScreen
+import com.heremanikandan.scriptifyevents.screens.WelcomeScreen
 import com.heremanikandan.scriptifyevents.ui.theme.ScriptifyeventsTheme
 
 class MainActivity : ComponentActivity() {

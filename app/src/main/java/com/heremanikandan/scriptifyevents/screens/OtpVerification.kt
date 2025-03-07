@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.scenes
+package com.heremanikandan.scriptifyevents.screens
 
 import android.util.Log
 import androidx.compose.foundation.background

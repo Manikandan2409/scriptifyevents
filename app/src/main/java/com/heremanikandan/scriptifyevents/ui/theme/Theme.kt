@@ -1,6 +1,5 @@
 package com.heremanikandan.scriptifyevents.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -13,17 +12,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = dark,
-    onPrimary = light_dark,
+    primary = dark,     // topbar
+    onPrimary = light_dark, // background
 
     secondary = dark_component,
     onSecondary = dark_placeholder,
-    tertiary = Pink80,
-
-
-            background = Color(0xFFFFFBFE),
+    tertiary = dark_topBar,
+    onTertiary = dark_text, // text
+    background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
-    onTertiary = Color.White,
+
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
 
