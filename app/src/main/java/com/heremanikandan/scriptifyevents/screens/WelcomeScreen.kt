@@ -1,7 +1,11 @@
 package com.heremanikandan.scriptifyevents.screens
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.util.Log
 import android.util.Patterns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +73,19 @@ fun WelcomeScreen(navController: NavController) {
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val activityResultLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.d("Auth", "Additional permissions granted successfully")
+            } else {
+                Log.e("Auth", "User denied additional permissions")
+            }
+        }
+
 
     Box(
         modifier = Modifier
@@ -242,7 +260,8 @@ fun WelcomeScreen(navController: NavController) {
                         onClick = {
                             isLoading = true
                             CoroutineScope(Dispatchers.IO).launch {
-                                val success = authManager.signInWithGoogle()
+                               // val success = authManager.signInWithGoogle()
+                                val success = authManager.signInWithGoogle(context, activityResultLauncher)
                                 withContext(Dispatchers.Main) { // ✅ Switch to Main Thread
                                     isLoading = false
                                     if (success) navController.navigate(Screen.Dashboard.route){

@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.db.entities
+package com.heremanikandan.scriptifyevents.db.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -20,6 +20,6 @@ import androidx.room.PrimaryKey
 data class Reminder(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val eventId: Int,
-    val dateTimeMillis: Long
+    val  reminderTimeMillis: Long
 )
 

@@ -7,9 +7,9 @@ import androidx.room.RoomDatabase
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.dao.ReminderDao
 import com.heremanikandan.scriptifyevents.db.dao.UserDao
-import com.heremanikandan.scriptifyevents.db.entities.Event
-import com.heremanikandan.scriptifyevents.db.entities.Reminder
-import com.heremanikandan.scriptifyevents.db.entities.User
+import com.heremanikandan.scriptifyevents.db.model.Event
+import com.heremanikandan.scriptifyevents.db.model.Reminder
+import com.heremanikandan.scriptifyevents.db.model.User
 
 //@Database(entities = [User::class,Event::class,], version = 1)
 @Database(entities = [User::class,Event::class, Reminder::class], version = 1, exportSchema = false)

@@ -1,6 +1,10 @@
 package com.heremanikandan.scriptifyevents.drawer.event
 
 import android.app.TimePickerDialog
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +42,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.heremanikandan.scriptifyevents.db.ScriptyManager
+import com.heremanikandan.scriptifyevents.db.model.Event
+import com.heremanikandan.scriptifyevents.db.model.Reminder
+import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
+import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.viewModel.HomeViewModel
+import com.heremanikandan.scriptifyevents.viewModel.factory.HomeViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -51,19 +68,23 @@ fun AddEvent(
     val context = LocalContext.current
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
-
     val today = remember { Calendar.getInstance() }
     val maxEventDate = remember { Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 30) } }
-
     var eventName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(today.time) }
     var eventTime by remember { mutableStateOf(today.time) }
     var isReminderEnabled by remember { mutableStateOf(false) }
     var reminderDate by remember { mutableStateOf(today.time) }
-
+    var reminderTime by remember { mutableStateOf(today.time) }
+    var eventNameError by remember { mutableStateOf<String?>(null) }
     var eventDateError by remember { mutableStateOf<String?>(null) }
     var reminderDateError by remember { mutableStateOf<String?>(null) }
+    val localDbEvent  = ScriptyManager.getInstance(context).EventDao()
+    val localReminder = ScriptyManager.getInstance(context).ReminderDao()
+    val sharedPrefManager = SharedPrefManager(context)
+    val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(localDbEvent))
+    val coroutineScope = rememberCoroutineScope()
 
     fun validateEventDate(date: Date) {
         val selectedDate = Calendar.getInstance().apply { time = date }
@@ -84,14 +105,125 @@ fun AddEvent(
         }
     }
 
-    fun validateAndSaveEvent() {
-        validateEventDate(eventDate)
-        if (isReminderEnabled) validateReminderDate(reminderDate)
+    suspend fun validateName(name: String?): Boolean {
+    val regex = Regex("^[a-zA-Z0-9_]{2,}\$")
 
-        if (eventDateError == null && reminderDateError == null) {
-            Toast.makeText(context, "Event saved successfully!", Toast.LENGTH_SHORT).show()
+    if (name.isNullOrBlank()) {
+        eventNameError = "Event name cannot be empty"
+        return false
+    }
+
+    if (!regex.matches(name)) {
+        eventNameError = "Event name must have at least 2 characters"
+        return false
+    }
+
+    val exists = viewModel.isEventNameExists(name)
+    if (exists) {
+        eventNameError = "Name already exists"
+        return false
+    }
+
+    eventNameError = null
+    return true
+}
+
+    fun convertToMillis(dateStr: String, timeStr: String): Long {
+//        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+//        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+
+        val date = dateFormatter.parse(dateStr) // Parse date
+        val time = timeFormatter.parse(timeStr) // Parse time
+
+        val calendar = Calendar.getInstance()
+        calendar.time = date ?: return -1 // Set date
+
+        val timeCalendar = Calendar.getInstance()
+        timeCalendar.time = time ?: return -1
+
+        // Set parsed time (hour, minute) into the date calendar
+        calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
+        calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        return calendar.timeInMillis // Convert to milliseconds
+    }
+
+    fun showToast(context: Context, message: String) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
-        navController.popBackStack()
+    }
+    suspend fun getEventByName(eventName: String): Event? {
+        return withContext(Dispatchers.IO) {
+            localDbEvent.getEventByName(eventName) // Call the DAO function inside Dispatchers.IO
+        }
+    }
+    suspend fun validateAndSaveEvent() {
+        validateEventDate(eventDate)
+       if (!validateName(eventName)) return
+
+        if (isReminderEnabled) {
+            validateReminderDate(reminderDate)
+
+        }
+
+        eventDateError =null
+        eventNameError=null
+        val dateStr = dateFormatter.format(eventDate)
+        val timeStr = timeFormatter.format(eventTime)
+        val dateTimeMillis = convertToMillis(dateStr,timeStr)
+
+        if (eventDateError == null && reminderDateError == null && eventNameError == null) {
+            Log.d("TIME IN MILLIS ","date time in millis $dateTimeMillis")
+            val newEvent= Event(
+                name =  eventName,
+                description = description,
+                dateTimeMillis = dateTimeMillis,
+                disabled = false,
+                isCompleted = false,
+                isOngoing = false,
+                isWaiting = true,
+                reminder = isReminderEnabled,
+                createdBy = sharedPrefManager.getUserName()!!
+            )
+
+            viewModel.insertEvent(newEvent) { isSuccess ->
+                Handler(Looper.getMainLooper()).post {
+
+                    if (isSuccess) {
+                        val reminderDateStr = dateFormatter.format(reminderDate)
+                        val remindertimeStr = timeFormatter.format(reminderTime)
+                        val reminderTimeMillis = convertToMillis(reminderDateStr,remindertimeStr)
+
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val event = getEventByName(eventName) // This function is already using Dispatchers.IO
+                            event?.let {
+                                val reminderId = localReminder.insertReminder(
+                                    Reminder(
+                                        eventId = it.id,
+                                        reminderTimeMillis = reminderTimeMillis
+                                    )
+                                )
+                                withContext(Dispatchers.Main) {
+                                    if (reminderId != null) {
+                                        showToast(context, "Event and reminder added successfully")
+                                    }
+                                    navController.popBackStack() // Ensure it's called in Main Thread
+                                }
+                            }
+                        }
+
+                       // navController.popBackStack() // Ensure it's called in Main Thread
+                    } else {
+                        Toast.makeText(context, "Failed to add event.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            // navController.popBackStack()
+        }
     }
 
     // Screen Layout
@@ -107,17 +239,37 @@ fun AddEvent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CustomTextField(
-                label = "Event Name",
+//            event name
+            OutlinedTextField(
                 value = eventName,
-                onValueChange = { eventName = it },
-
+                onValueChange =
+                {
+                    eventName = it
+                   coroutineScope.launch {
+                       validateName(it)
+                   }
+                },
+                label = { Text("Event Name", color = MaterialTheme.colorScheme.onTertiary) },
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary),
+                isError = eventNameError != null,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                )
             )
-
-            CustomTextField(
-                label = "Description",
+            eventNameError?.let { Text(it, color = Color.Red, fontSize = 12.sp) }
+// event description
+            OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
+                label = { Text("Description", color = MaterialTheme.colorScheme.onTertiary) },
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary),
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                )
 
             )
 
@@ -150,6 +302,7 @@ fun AddEvent(
             }
 
             if (isReminderEnabled) {
+//                reminder date
                 DatePickerField(
                     label = "Reminder Date",
                     selectedDate = reminderDate,
@@ -161,11 +314,26 @@ fun AddEvent(
                     boxColor = MaterialTheme.colorScheme.secondary,
                     textColor = MaterialTheme.colorScheme.onTertiary
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+//                reminder time
+                TimePickerField(
+                    label = "Reminder Time",
+                    selectedTime = reminderTime,
+                    onTimeSelected = { reminderTime = it },
+
+                    )
             }
 
             Button(
-                onClick = { validateAndSaveEvent() },
-                modifier = Modifier.fillMaxWidth()
+                onClick = { coroutineScope.launch {
+                    validateAndSaveEvent()
+                } },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Yellow60,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
+                )
+
             ) {
                 Text("Save Event")
             }
@@ -173,22 +341,7 @@ fun AddEvent(
     }
 }
 
-@Composable
-fun CustomTextField(label: String, value: String, onValueChange: (String) -> Unit, ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, color = MaterialTheme.colorScheme.onTertiary) },
-        textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(8.dp)),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Gray,
-            unfocusedBorderColor = Color.LightGray
-        )
-    )
-}
+
 
 @Composable
 fun DatePickerField(label: String, selectedDate: Date, onDateSelected: (Date) -> Unit, errorMessage: String?, boxColor: Color, textColor: Color) {

@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.db.entities
+package com.heremanikandan.scriptifyevents.db.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -14,7 +14,7 @@ import com.heremanikandan.scriptifyevents.drawer.menu.SettingsScreen
 @Composable
 fun SideBarNavigationHost(navController: NavHostController, modifier: Modifier = Modifier) {
 
-
+ 
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Settings.route) { SettingsScreen(navController) }
