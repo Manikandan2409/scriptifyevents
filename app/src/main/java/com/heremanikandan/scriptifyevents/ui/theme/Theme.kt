@@ -14,26 +14,21 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = dark,     // topbar
     onPrimary = light_dark, // background
-
     secondary = dark_component,
     onSecondary = dark_placeholder,
     tertiary = dark_topBar,
     onTertiary = dark_text, // text
-    background = Color(0xFFFFFBFE),
+    background = dark_text,
     surface = Color(0xFFFFFBFE),
-
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
-
     )
-
 private val LightColorScheme = lightColorScheme(
     primary = light,
     onPrimary = light_light,
     secondary = light_components,
     onSecondary = light_placeholder,
-
-    background = Color(0xFFFFFBFE),
+    background = Color.LightGray,
     surface = Color(0xFFFFFBFE),
     onTertiary = Color.Black,
     onBackground = Color(0xFF1C1B1F),

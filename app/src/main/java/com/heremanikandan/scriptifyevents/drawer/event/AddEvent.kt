@@ -49,8 +49,8 @@ import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.Reminder
 import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
-import com.heremanikandan.scriptifyevents.viewModel.HomeViewModel
-import com.heremanikandan.scriptifyevents.viewModel.factory.HomeViewModelFactory
+import com.heremanikandan.scriptifyevents.viewModel.AddEventViewModel
+import com.heremanikandan.scriptifyevents.viewModel.factory.AddEventViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,7 +83,7 @@ fun AddEvent(
     val localDbEvent  = ScriptyManager.getInstance(context).EventDao()
     val localReminder = ScriptyManager.getInstance(context).ReminderDao()
     val sharedPrefManager = SharedPrefManager(context)
-    val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(localDbEvent))
+    val viewModel: AddEventViewModel = viewModel(factory = AddEventViewModelFactory(localDbEvent))
     val coroutineScope = rememberCoroutineScope()
 
     fun validateEventDate(date: Date) {
@@ -117,12 +117,12 @@ fun AddEvent(
         eventNameError = "Event name must have at least 2 characters"
         return false
     }
-
-    val exists = viewModel.isEventNameExists(name)
-    if (exists) {
-        eventNameError = "Name already exists"
-        return false
-    }
+// check the event is already excist or not
+//    val exists = viewModel.isEventNameExists(name)
+//    if (exists) {
+//        eventNameError = "Name already exists"
+//        return false
+//    }
 
     eventNameError = null
     return true

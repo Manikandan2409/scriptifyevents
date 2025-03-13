@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.drawer.event.AddEvent
+import com.heremanikandan.scriptifyevents.drawer.event.EventScreen
 import com.heremanikandan.scriptifyevents.drawer.menu.HomeScreen
 import com.heremanikandan.scriptifyevents.drawer.menu.ProfileScreen
 import com.heremanikandan.scriptifyevents.drawer.menu.SettingsScreen
@@ -20,5 +21,9 @@ fun SideBarNavigationHost(navController: NavHostController, modifier: Modifier =
         composable(Screen.Settings.route) { SettingsScreen(navController) }
         composable(Screen.Profile.route) { ProfileScreen(navController) }
         composable(Screen.AddEvent.route){ AddEvent(navController = navController)}
+        composable("eventDetails/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: "0"
+            EventScreen(eventId)
+        }
     }
 }

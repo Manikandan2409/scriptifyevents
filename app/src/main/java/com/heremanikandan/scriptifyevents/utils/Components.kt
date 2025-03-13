@@ -33,13 +33,15 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun EventCard(
+    id:Int,
     name: String,
     description:String,
     createdDate: String,
     eventDate: String,
     eventTime: String,
     createdBy:String,
-    imageRes: Int
+    imageRes: Int,
+    onClick :(Int) ->Unit
 ) {
 
     val elevated by remember { mutableStateOf(false) }
@@ -55,7 +57,9 @@ fun EventCard(
             .fillMaxWidth()
             .padding(10.dp)
             .scale(scale)
-            .clickable { elevated != elevated }
+            .clickable {
+                onClick(id)
+            }
 
     ) {
         Row(
