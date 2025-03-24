@@ -20,7 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.AttendeesScreen
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.OverviewScreen
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.ParticipantsScreen
@@ -33,14 +35,15 @@ sealed class EventTab(val route: String, val icon: ImageVector, val label: Strin
 @Composable
 fun EventScreen(eventId: String) {
     var selectedTab by remember { mutableStateOf<EventTab>(EventTab.Overview) }
-
+    val context = LocalContext.current
+    var db  = ScriptyManager.getInstance(context)
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         // Show the current screen based on selected tab
         Column(modifier = Modifier.weight(1f)) { // Pushes content to fill available space
             when (selectedTab) {
-                is EventTab.Overview -> OverviewScreen(eventId)
+                is EventTab.Overview -> OverviewScreen(eventId,db.EventDao(),db.SharedWithDao())
                 is EventTab.Attendees -> AttendeesScreen(eventId)
                 is EventTab.Participants -> ParticipantsScreen(eventId)
             }

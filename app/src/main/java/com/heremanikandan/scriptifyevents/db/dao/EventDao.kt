@@ -14,7 +14,7 @@ interface EventDao {
     fun insertEvent(event: Event): Long
 
     @Query("SELECT * FROM event WHERE id = :id")
-    fun getEventById(id: Long): Event?
+    suspend fun getEventById(id: Long): Event?
 
     @Query("SELECT * FROM event")
     fun getAllEvents(): Flow<List<Event>>
