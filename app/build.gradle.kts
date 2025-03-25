@@ -129,6 +129,15 @@ dependencies {
     // Optional: If you use Paging with Room
     implementation("androidx.room:room-paging:2.6.1")
 
+
+
+//     excel
+    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("org.apache.poi:poi:5.3.0")
+    implementation("org.apache.poi:poi-ooxml:5.3.0")
+    implementation("org.apache.xmlbeans:xmlbeans:5.3.0")
+
+
 }
 //dependencies {
 //    // Core & Lifecycle

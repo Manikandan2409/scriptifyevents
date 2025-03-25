@@ -37,15 +37,20 @@ fun EventScreen(eventId: String) {
     var selectedTab by remember { mutableStateOf<EventTab>(EventTab.Overview) }
     val context = LocalContext.current
     var db  = ScriptyManager.getInstance(context)
+    val eventDao = db.EventDao()
+    val sharedWithDao = db.SharedWithDao()
+    val participantDao = db.participantDao()
+    val id = Integer.parseInt(eventId).toLong()
+//    val participants = d
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         // Show the current screen based on selected tab
         Column(modifier = Modifier.weight(1f)) { // Pushes content to fill available space
             when (selectedTab) {
-                is EventTab.Overview -> OverviewScreen(eventId,db.EventDao(),db.SharedWithDao())
+                is EventTab.Overview -> OverviewScreen(eventId,eventDao,sharedWithDao)
                 is EventTab.Attendees -> AttendeesScreen(eventId)
-                is EventTab.Participants -> ParticipantsScreen(eventId)
+                is EventTab.Participants -> ParticipantsScreen(id,participantDao)
             }
         }
 
