@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.heremanikandan.scriptifyevents.db.dao.AttendanceDao
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.dao.ReminderDao
 import com.heremanikandan.scriptifyevents.db.dao.SharedWithDao
 import com.heremanikandan.scriptifyevents.db.dao.UserDao
+import com.heremanikandan.scriptifyevents.db.model.Attendance
 import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import com.heremanikandan.scriptifyevents.db.model.Reminder
@@ -16,13 +18,14 @@ import com.heremanikandan.scriptifyevents.db.model.SharedWith
 import com.heremanikandan.scriptifyevents.db.model.User
 
 //@Database(entities = [User::class,Event::class,], version = 1)
-@Database(entities = [User::class,Event::class, Reminder::class,SharedWith::class,Participant::class], version = 1, exportSchema = false)
+@Database(entities = [User::class,Event::class, Reminder::class,SharedWith::class,Participant::class,Attendance::class], version = 1, exportSchema = false)
 abstract class ScriptifyBase : RoomDatabase() {
     abstract fun userDao(): UserDao // Define your DAO interface here
     abstract  fun EventDao():EventDao
     abstract  fun ReminderDao():ReminderDao
     abstract  fun SharedWithDao():SharedWithDao
     abstract fun participantDao(): ParticipantDao
+    abstract  fun attendeesDao() : AttendanceDao
 }
 object ScriptyManager {
     private var INSTANCE: ScriptifyBase? = null

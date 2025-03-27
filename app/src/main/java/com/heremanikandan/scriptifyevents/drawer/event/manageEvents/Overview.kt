@@ -113,8 +113,6 @@ fun OverviewScreen(eventId: String,
 
         }
 
-
-
         // Shared Section
         Text(
             text = "Shared",

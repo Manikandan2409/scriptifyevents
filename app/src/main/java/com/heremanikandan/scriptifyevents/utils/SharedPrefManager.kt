@@ -11,7 +11,7 @@ class SharedPrefManager(context: Context) {
     private  val user_photo_url ="USER_PHOTO_URL"
     private  val user_pref = "USERPrefs"
     private  val isLoggedIn ="IS_LOGGED_IN"
-    private val prefs: SharedPreferences = context.getSharedPreferences(user_pref, Context.MODE_PRIVATE)
+    val prefs: SharedPreferences = context.applicationContext.getSharedPreferences(user_pref, Context.MODE_PRIVATE)
 
     fun saveUser(uid:String?,name: String?, email: String?,photoUrl:Uri?) {
         with(prefs.edit()) {
@@ -41,7 +41,12 @@ class SharedPrefManager(context: Context) {
     fun signOut() {
         with(prefs.edit()) {
             clear()
-            apply()
+            val success = commit()
+            if (success) {
+                println("SharedPreferences cleared successfully.")
+            } else {
+                println("Failed to clear SharedPreferences.")
+            }
         }
     }
 }

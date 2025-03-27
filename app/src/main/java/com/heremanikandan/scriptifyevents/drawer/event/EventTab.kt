@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
+import com.heremanikandan.scriptifyevents.db.repos.AttendanceRepository
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.AttendeesScreen
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.OverviewScreen
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.ParticipantsScreen
@@ -40,6 +41,8 @@ fun EventScreen(eventId: String) {
     val eventDao = db.EventDao()
     val sharedWithDao = db.SharedWithDao()
     val participantDao = db.participantDao()
+    val attendeesDao = db.attendeesDao()
+    val attendanceRepository = AttendanceRepository(attendeesDao)
     val id = Integer.parseInt(eventId).toLong()
 //    val participants = d
     Column(
@@ -48,9 +51,9 @@ fun EventScreen(eventId: String) {
         // Show the current screen based on selected tab
         Column(modifier = Modifier.weight(1f)) { // Pushes content to fill available space
             when (selectedTab) {
-                is EventTab.Overview -> OverviewScreen(eventId,eventDao,sharedWithDao)
-                is EventTab.Attendees -> AttendeesScreen(eventId)
-                is EventTab.Participants -> ParticipantsScreen(id,participantDao)
+                is EventTab.Overview -> OverviewScreen(eventId, eventDao, sharedWithDao)
+                is EventTab.Attendees -> AttendeesScreen(id, attendanceRepository)
+                is EventTab.Participants -> ParticipantsScreen(id, participantDao)
             }
         }
 
@@ -76,5 +79,7 @@ fun EventScreen(eventId: String) {
                 )
             }
         }
+
+
     }
 }

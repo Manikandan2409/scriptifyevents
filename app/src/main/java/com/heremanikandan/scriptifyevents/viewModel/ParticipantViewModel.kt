@@ -59,21 +59,6 @@ private fun loadParticipants() {
         }
     }
 
-//    fun sortParticipants(option: String, ascending: Boolean) {
-//        filteredParticipants.value = when (option) {
-//            "Name" -> {
-//                if (ascending) filteredParticipants.value.sortedBy { it.name }
-//                else filteredParticipants.value.sortedByDescending { it.name }
-//            }
-//
-//            "Roll No" -> {
-//                if (ascending) filteredParticipants.value.sortedBy { it.rollNo }
-//                else filteredParticipants.value.sortedByDescending { it.rollNo }
-//            }
-//
-//            else -> filteredParticipants.value
-//        }
-//    }
 
     fun sortParticipants(option: String, ascending: Boolean) {
         if (_participants.value.isEmpty()) return
@@ -95,22 +80,6 @@ private fun loadParticipants() {
         }
     }
 
-//
-//    fun addParticipant(participant: Participant) {
-//        viewModelScope.launch {
-//            Log.i(TAG, "addParticipant: ${participant.name}")
-//            participantDao.insertParticipant(participant)
-//            Log.i(TAG, "addParticipant: ${participant.name} inserted")
-//
-//            viewModelScope.launch(Dispatchers.IO) {
-//                participantDao.insertParticipant(participant)
-//                val updatedParticipants = participantDao.getParticipantsByEventId(participant.eventId)
-//                withContext(Dispatchers.Main) {
-//                    _participant.value = updatedParticipants
-//                }
-//            }
-//        }
-//    }
 
 
     fun addParticipant(participant: Participant) {

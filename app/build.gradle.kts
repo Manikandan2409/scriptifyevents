@@ -55,9 +55,8 @@ android {
     }
 
 }
-//
-dependencies {
 
+dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -68,6 +67,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.googleid)
     implementation(libs.firebase.database.ktx)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,7 +75,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
     // Jetpack Compose dependencies
     implementation("androidx.compose.ui:ui:1.7.8")
     implementation("androidx.compose.material3:material3:1.2.0")
@@ -106,88 +105,24 @@ dependencies {
     // Google Slides API
 //    implementation("com.google.apis:google-api-services-slides:v1-rev20220523-1.32.1")
     implementation("com.google.apis:google-api-services-slides:v1-rev20210820-1.32.1")
-
     // Compose Navigation
     //implementation("androidx.navigation:navigation-compose:2.7.6")
     implementation ("androidx.navigation:navigation-compose:2.7.7")
-
     // Icons and Image Loading
     implementation ("androidx.compose.material:material-icons-extended:1.6.3")
-
     // Coil for Image Loading (optional for profile image)
     implementation("io.coil-kt:coil-compose:2.5.0")
-
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1") // For annotation processing
-
     // Kotlin Extensions & Coroutines Support
     implementation("androidx.room:room-ktx:2.6.1")
-
     // Optional: If you use RxJava with Room
     implementation("androidx.room:room-rxjava3:2.6.1")
-
     // Optional: If you use Paging with Room
     implementation("androidx.room:room-paging:2.6.1")
-
-
-
 //     excel
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("org.apache.poi:poi:5.3.0")
     implementation("org.apache.poi:poi-ooxml:5.3.0")
     implementation("org.apache.xmlbeans:xmlbeans:5.3.0")
-
-
 }
-//dependencies {
-//    // Core & Lifecycle
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.lifecycle.runtime.ktx)
-//    implementation(libs.androidx.activity.compose)
-//
-//    // Compose BOM (Handles versioning for Compose)
-//    implementation(platform(libs.androidx.compose.bom))
-//    implementation("androidx.compose.ui:ui")
-//    implementation("androidx.compose.ui:ui-graphics")
-//    implementation("androidx.compose.ui:ui-tooling-preview")
-//    implementation("androidx.compose.material3:material3")
-//
-//    // Jetpack Compose Navigation
-//    implementation("androidx.navigation:navigation-compose:2.7.7")
-//
-//    // Firebase
-//    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-//    implementation("com.google.firebase:firebase-auth-ktx")
-//    implementation(libs.firebase.database.ktx)
-//
-//    // Google Sign-In
-//    implementation("com.google.android.gms:play-services-auth:20.7.0")
-//
-//    // Google APIs
-//    implementation("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
-//    implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
-//    implementation("com.google.apis:google-api-services-calendar:v3-rev20220715-2.0.0")
-//    implementation("com.google.apis:google-api-services-sheets:v4-rev612-1.25.0")
-//   // implementation("com.google.apis:google-api-services-slides:v1-rev20220523-1.32.1") // ✅ Uncommented
-//    implementation("com.google.apis:google-api-services-slides:v1-rev20210820-1.32.1")
-//    // Jetpack Room
-//    implementation("androidx.room:room-runtime:2.6.1")
-//    kapt("androidx.room:room-compiler:2.6.1")
-//    implementation("androidx.room:room-ktx:2.6.1")
-//    implementation("androidx.room:room-paging:2.6.1")
-//
-//    // Image Loading (Coil)
-//    implementation("io.coil-kt:coil-compose:2.5.0")
-//
-//    // Icons
-//    implementation("androidx.compose.material:material-icons-extended:1.6.3")
-//
-//    // Testing
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.androidx.espresso.core)
-//    androidTestImplementation(platform(libs.androidx.compose.bom))
-//    androidTestImplementation(libs.androidx.ui.test.junit4)
-//    debugImplementation(libs.androidx.ui.tooling)
-//    debugImplementation(libs.androidx.ui.test.manifest)
-//}
