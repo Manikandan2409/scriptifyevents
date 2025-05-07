@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,15 +26,18 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.heremanikandan.scriptifyevents.drawer.DrawerContent
 import com.heremanikandan.scriptifyevents.drawer.SideBarNavigationHost
+import com.heremanikandan.scriptifyevents.utils.NetworkObserver
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Dashboard(navController: NavController){
+fun Dashboard(navController: NavController,networkObserver: NetworkObserver){
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
+
+    val isConnected by networkObserver.isConnected.collectAsState()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -57,13 +62,15 @@ fun Dashboard(navController: NavController){
                         }
                     },
                     colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary, // Background color
+                        containerColor = if (isConnected)
+                            MaterialTheme.colorScheme.primary
+                        else
+                           MaterialTheme.colorScheme.surfaceDim, // Background color
                         titleContentColor = MaterialTheme.colorScheme.onTertiary, // Title text color
                         navigationIconContentColor = MaterialTheme.colorScheme.onTertiary // Icon color
                     )
                 )
             },
-
         ) { paddingValues ->
             SideBarNavigationHost(navController, Modifier.padding(paddingValues))
 

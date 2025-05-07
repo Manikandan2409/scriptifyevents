@@ -1,5 +1,6 @@
 package com.heremanikandan.scriptifyevents.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -31,11 +34,15 @@ import com.heremanikandan.scriptifyevents.viewModel.ParticipantViewModel
 
 // 🔍 Search and Sort Bar + Layout Switch
 @Composable
-fun SearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boolean, onLayoutToggle: () -> Unit) {
+fun ParticipantSearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boolean, onLayoutToggle: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var sortOption by remember { mutableStateOf("Name") }
+    var sortOption by remember { mutableStateOf("Id") }
     var isAscending by remember { mutableStateOf(true) }
-
+    val sortingOptions = listOf("Id","Name","Roll No")
+    var showSortMenu by remember { mutableStateOf(false) }
+    val selectedSortOption by remember {
+        mutableStateOf("Id")
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,45 +78,93 @@ fun SearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boolean, onLay
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(8.dp))
-        DropdownMenuComponent(
-            options = listOf("Name", "Roll No"),
-            selectedOption = sortOption
-        ) {
-            sortOption = it
-            viewModel.sortParticipants(it, isAscending)
-        }
+
+
+       sortingOptions.forEach {
+           Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = {
+                sortOption = it
+                viewModel.sortParticipants(sortOption,isAscending)
+            },
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                    containerColor = if (sortOption ==it)  MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary
+                )
+             ) {
+                Text(text = it)
+            }
+           Log.d("ATTENDEES","CREAtion of $it completed")
+       }
+
         Spacer(modifier = Modifier.width(16.dp))
-        Button(onClick = {
-            isAscending = !isAscending
-            viewModel.sortParticipants(sortOption, isAscending)
-        }) {
-            Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.onTertiary)
+
+        // SORT DROPDOWN
+        Box {
+            Button(onClick = { isAscending=!isAscending
+            viewModel.sortParticipants(sortOption,isAscending)}) {
+//                        Text("Sort")
+                Icon(
+                    imageVector = Icons.Default.Sort,
+                    contentDescription = "Sort",
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+                Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.primaryContainer)
+
+            }
+
         }
     }
 }
+
+
+
+
 // ⏬ Dropdown Menu for Sort Options
 @Composable
-fun DropdownMenuComponent(options: List<String>, selectedOption: String, onOptionSelected: (String) -> Unit) {
+fun DropdownMenuComponent(
+    options: List<String>,
+    selectedOption: String?,
+    onOptionSelected: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
+
     Box {
         Button(onClick = { expanded = true }) {
-            Text(text = selectedOption, color = MaterialTheme.colorScheme.onTertiary)
+            Text(
+                text = selectedOption ?: "Select Option",
+                color = MaterialTheme.colorScheme.onTertiary
+            )
         }
-        DropdownMenu(expanded = expanded,
+
+        DropdownMenu(
+            expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primary)) {
+            modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+        ) {
             options.forEach { option ->
+                val isSelected = option == selectedOption
+                val backgroundColor = if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                   MaterialTheme.colorScheme.primary
+                }
+
                 DropdownMenuItem(
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
                     },
-                    text = { Text(option, color = MaterialTheme.colorScheme.onTertiary) }
+                    modifier = Modifier.background(backgroundColor),
+                    text = {
+                        Text(option, color = MaterialTheme.colorScheme.onTertiary)
+                    }
                 )
+
             }
         }
     }
 }
+
 
 

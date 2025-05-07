@@ -15,12 +15,13 @@ import com.heremanikandan.scriptifyevents.screens.SignUpScreen
 import com.heremanikandan.scriptifyevents.screens.SplashScreen
 import com.heremanikandan.scriptifyevents.screens.WelcomeScreen
 import com.heremanikandan.scriptifyevents.ui.theme.ScriptifyeventsTheme
+import com.heremanikandan.scriptifyevents.utils.NetworkObserver
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-      //  FirebaseApp.initializeApp(this)
+
         enableEdgeToEdge()
         setContent {
             ScriptifyeventsTheme {
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
 fun MyApp() {
     val navController = rememberNavController()
     val context = LocalContext.current
-   // FirebaseApp.initializeApp(context)
+    val networkObserver = NetworkObserver(context)
 
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
         composable(Screen.Splash.route) {
@@ -49,7 +50,7 @@ fun MyApp() {
             SignUpScreen(navController = navController)
         }
         composable(Screen.Dashboard.route){
-            Dashboard(navController = navController)
+            Dashboard(navController = navController,networkObserver)
         }
         composable(Screen.OtpVerification.route) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""

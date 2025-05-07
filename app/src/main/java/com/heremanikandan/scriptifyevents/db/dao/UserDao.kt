@@ -12,7 +12,7 @@ interface UserDao {
     @Query("SELECT * FROM user")
     suspend fun getAllUsers(): List<User>
 
-    @Query("SELECT * FROM user WHERE uid = :uid")
+    @Query("SELECT * FROM user WHERE uid = :uid ")
     suspend fun getUserById(uid: String): User?
 
 

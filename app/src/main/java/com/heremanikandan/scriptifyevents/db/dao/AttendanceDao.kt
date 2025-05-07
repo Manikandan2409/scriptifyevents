@@ -5,11 +5,11 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
+import com.heremanikandan.scriptifyevents.db.dto.AttendanceWithParticipantAndUser
 import com.heremanikandan.scriptifyevents.db.model.Attendance
 import com.heremanikandan.scriptifyevents.db.model.AttendanceMode
-import com.heremanikandan.scriptifyevents.db.model.ParticipantWithAttendance
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AttendanceDao {
@@ -27,18 +27,18 @@ interface AttendanceDao {
     suspend fun deleteAttendanceByEventId(eventId: Long,participantId: Long)
 
     @Query("SELECT * FROM attendance WHERE eventId = :eventId AND participantId = :participantId LIMIT 1")
-    suspend fun getAttendanceByEventAndParticipant(eventId: Long, participantId: Long): Attendance?
+    fun getAttendanceByEventAndParticipant(eventId: Long, participantId: Long): Attendance?
 
     @Query("SELECT * FROM attendance WHERE eventId = :eventId")
-    suspend fun getAttendanceByEventId(eventId: Long): List<Attendance>
+    fun getAttendanceByEventId(eventId: Long): Flow<List<AttendanceWithParticipantAndUser>>
 
     @Query("SELECT * FROM attendance WHERE attendanceMadeBy = :mode")
-    suspend fun getAttendanceByMode(mode: AttendanceMode): List<Attendance>
+    fun getAttendanceByMode(mode: AttendanceMode): Flow<List<AttendanceWithParticipantAndUser>>
     @Query("SELECT * FROM attendance WHERE eventId = :eventId AND userId = :userId")
-    suspend fun getAttendanceByEventAndUser(eventId: Long, userId: Long): List<Attendance>
+    fun getAttendanceByEventAndUser(eventId: Long, userId: Long): Flow<List<AttendanceWithParticipantAndUser>>
 
-    @Transaction
-    @Query("SELECT * FROM participants WHERE id = :participantId")
-    suspend fun getParticipantWithAttendance(participantId: Long): List<ParticipantWithAttendance>
+//    @Transaction
+//    @Query("SELECT * FROM participants WHERE id = :participantId")
+//    suspend fun getParticipantWithAttendance(participantId: Long): List<ParticipantWithAttendance>
 }
 

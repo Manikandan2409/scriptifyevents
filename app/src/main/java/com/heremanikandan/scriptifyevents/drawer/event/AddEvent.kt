@@ -1,11 +1,13 @@
 package com.heremanikandan.scriptifyevents.drawer.event
 
-import android.app.TimePickerDialog
+import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,14 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -44,11 +40,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.heremanikandan.scriptifyevents.components.DatePickerField
+import com.heremanikandan.scriptifyevents.components.TimePickerField
+import com.heremanikandan.scriptifyevents.components.isExactAlarmPermissionGranted
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.Reminder
 import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.utils.connections.Permission
+import com.heremanikandan.scriptifyevents.utils.connections.SpreadSheet
+import com.heremanikandan.scriptifyevents.utils.notification.scheduleNotification
 import com.heremanikandan.scriptifyevents.viewModel.AddEventViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.AddEventViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -117,16 +121,24 @@ fun AddEvent(
         eventNameError = "Event name must have at least 2 characters"
         return false
     }
-// check the event is already excist or not
-//    val exists = viewModel.isEventNameExists(name)
-//    if (exists) {
-//        eventNameError = "Name already exists"
-//        return false
-//    }
+
+        if (viewModel.isEventNameExists(name)){
+            eventNameError ="Event already Excist"
+            return  false
+        }
 
     eventNameError = null
     return true
 }
+    val activityResultLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.d("Auth", "Additional permissions granted successfully")
+            } else {
+                Log.e("Auth", "User denied additional permissions")
+            }
+        }
 
     fun convertToMillis(dateStr: String, timeStr: String): Long {
 //        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -155,11 +167,13 @@ fun AddEvent(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
     suspend fun getEventByName(eventName: String): Event? {
         return withContext(Dispatchers.IO) {
             localDbEvent.getEventByName(eventName) // Call the DAO function inside Dispatchers.IO
         }
     }
+
     suspend fun validateAndSaveEvent() {
         validateEventDate(eventDate)
        if (!validateName(eventName)) return
@@ -177,6 +191,8 @@ fun AddEvent(
 
         if (eventDateError == null && reminderDateError == null && eventNameError == null) {
             Log.d("TIME IN MILLIS ","date time in millis $dateTimeMillis")
+
+
             val newEvent= Event(
                 name =  eventName,
                 description = description,
@@ -186,43 +202,65 @@ fun AddEvent(
                 isOngoing = false,
                 isWaiting = true,
                 reminder = isReminderEnabled,
-                createdBy = sharedPrefManager.getUserName()!!
+                createdBy = sharedPrefManager.getUserName()!!,
+                participants = 0,
+                unknown = 0,
+                spreadSheetId = ""
+
             )
+
+
 
             viewModel.insertEvent(newEvent) { isSuccess ->
                 Handler(Looper.getMainLooper()).post {
-
                     if (isSuccess) {
+                        val permission = Permission(context)
                         val reminderDateStr = dateFormatter.format(reminderDate)
-                        val remindertimeStr = timeFormatter.format(reminderTime)
-                        val reminderTimeMillis = convertToMillis(reminderDateStr,remindertimeStr)
+                        val reminderTimeStr = timeFormatter.format(reminderTime)
+                        val reminderTimeMillis = convertToMillis(reminderDateStr, reminderTimeStr)
 
                         coroutineScope.launch(Dispatchers.IO) {
-                            val event = getEventByName(eventName) // This function is already using Dispatchers.IO
+                            val event = getEventByName(eventName)
                             event?.let {
                                 val reminderId = localReminder.insertReminder(
-                                    Reminder(
-                                        eventId = it.id,
-                                        reminderTimeMillis = reminderTimeMillis
-                                    )
+                                    Reminder(eventId = it.id, reminderTimeMillis = reminderTimeMillis)
                                 )
+
                                 withContext(Dispatchers.Main) {
+                                    val userUid = sharedPrefManager.getUserUid()!!
+//                                   to-do ,create a google sheet
+//                                      permission.requestPermissionIfMissing(
+//                                        userUid = userUid,
+//                                        key = "sheets",
+//                                        activityResultLauncher = activityResultLauncher,
+//                                        onGranted = {
+//                                            createAndStoreSpreadSheet(context, viewModel, event)
+//                                        },
+//                                        onLater = {
+//                                            Log.i("ADD_EVENT", "User chose to skip spreadsheet creation.")
+//                                        }
+//                                    )
+
+                                    if (isExactAlarmPermissionGranted(context)) {
+                                        scheduleNotification(context, eventName, "Reminder for $eventName", reminderTimeMillis)
+                                        scheduleNotification(context, eventName, "Event starts now", dateTimeMillis)
+                                    }
+
                                     if (reminderId != null) {
                                         showToast(context, "Event and reminder added successfully")
                                     }
-                                    navController.popBackStack() // Ensure it's called in Main Thread
+
+                                    navController.popBackStack()
                                 }
                             }
                         }
-
-                       // navController.popBackStack() // Ensure it's called in Main Thread
                     } else {
                         Toast.makeText(context, "Failed to add event.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
 
-            // navController.popBackStack()
+                // navController.popBackStack()
         }
     }
 
@@ -325,9 +363,11 @@ fun AddEvent(
             }
 
             Button(
-                onClick = { coroutineScope.launch {
-                    validateAndSaveEvent()
-                } },
+                onClick = {
+                    coroutineScope.launch {
+                        validateAndSaveEvent()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Yellow60,
@@ -343,76 +383,30 @@ fun AddEvent(
 
 
 
-@Composable
-fun DatePickerField(label: String, selectedDate: Date, onDateSelected: (Date) -> Unit, errorMessage: String?, boxColor: Color, textColor: Color) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance().apply { time = selectedDate }
-    val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
 
-    OutlinedTextField(
-        value = dateFormatter.format(selectedDate),
-        onValueChange = {},
-        label = { Text(label, color = MaterialTheme.colorScheme.onTertiary) },
-        readOnly = true,
-        isError = errorMessage != null,
-        trailingIcon = {
-            IconButton(onClick = {
-                android.app.DatePickerDialog(
-                    context,
-                    { _, year, month, dayOfMonth ->
-                        val newDate = Calendar.getInstance().apply { set(year, month, dayOfMonth) }.time
-                        onDateSelected(newDate)
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                ).show()
-            }) {
-                Icon(Icons.Default.DateRange, contentDescription = "Pick date", tint = MaterialTheme.colorScheme.onTertiary)
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(8.dp))
+fun createAndStoreSpreadSheet(context: Context,viewModel: AddEventViewModel,event:Event){
+    val credential = GoogleAccountCredential.usingOAuth2(
+        context,
+        listOf(
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive.file"
+        )
+    ).apply {
+        selectedAccount = GoogleSignIn.getLastSignedInAccount(context)?.account
+    }
+
+    val spreadsheetId = SpreadSheet.createSpreadsheet(
+        context = context,
+        credential = credential,
+        sheetTitle = event.name,
+        tabTitles = listOf("Attendance", "Participants", "Meta")
     )
-    errorMessage?.let {
-        Text(text = it, color = Color.Red, fontSize = 12.sp)
+    Log.d("ADD EVENT ","SPreadsheet createed with id : $spreadsheetId")
+    if (!spreadsheetId.isNullOrEmpty()) {
+        viewModel.updateSpreadsheetId(event.id, spreadsheetId)
     }
 }
 
-@Composable
-fun TimePickerField(label: String, selectedTime: Date, onTimeSelected: (Date) -> Unit) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance().apply { time = selectedTime }
-    val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
 
-    OutlinedTextField(
-        value = timeFormatter.format(selectedTime),
-        onValueChange = {},
-        label = { Text(label, color = MaterialTheme.colorScheme.onTertiary) },
-        readOnly = true,
-        trailingIcon = {
-            IconButton(onClick = {
-                TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        val newTime = Calendar.getInstance().apply {
-                            set(Calendar.HOUR_OF_DAY, hourOfDay)
-                            set(Calendar.MINUTE, minute)
-                        }.time
-                        onTimeSelected(newTime)
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    false
-                ).show()
-            }) {
-                Icon(Icons.Default.AccessTime, contentDescription = "Pick time", tint = MaterialTheme.colorScheme.onTertiary)
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(8.dp))
-    )
-}
+
 

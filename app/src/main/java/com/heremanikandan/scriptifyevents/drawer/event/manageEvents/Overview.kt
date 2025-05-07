@@ -1,7 +1,7 @@
 package com.heremanikandan.scriptifyevents.drawer.event.manageEvents
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.ArrowRight
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,11 +25,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heremanikandan.scriptifyevents.R
@@ -56,62 +55,80 @@ fun OverviewScreen(eventId: String,
             .background(MaterialTheme.colorScheme.onPrimary) // Light yellow background
     ) {
 
-        // Event Image Section
         Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Event Image",
-                modifier = Modifier.size(120.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .align(Alignment.BottomEnd)
-                    .background(MaterialTheme.colorScheme.onPrimary, shape = CircleShape)
-                    .clickable { /* Open Camera */ },
-                contentAlignment = Alignment.Center
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    painter = painterResource(id = androidx.core.R.drawable.ic_call_answer),
-                    contentDescription = "Edit Image",
-                    tint = Color(0xFF792850)
-                )
+                Card(
+                    shape = CircleShape,
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    modifier = Modifier
+                        .size(160.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(18.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Event Image",
+                            modifier = Modifier
+                                .size(160.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                            }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .padding(18.dp)
+
+                            ,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        eventDetails?.let { event ->
+                            Text(
+                                text = event.name,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+
             }
         }
-
 
         eventDetails?.let { event ->
-
-            // Event Title
-            Text(
-                text = event.name,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF792850),
-                modifier = Modifier.padding(top = 8.dp, start = 16.dp)
-            )
-
-
-            // Event Details Section
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = event.description, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val (date, time) = convertMillisToDateTime(event.dateTimeMillis)
-
-                EventDetailRow("Created at :", "24-dec-2024", Icons.Default.CalendarToday)
-                EventDetailRow("Date :", date, Icons.Default.Edit)
-                EventDetailRow("Created By :", event.createdBy, Icons.Default.Person)
-                EventDetailRow("Time :", time, Icons.Default.Schedule)
-
-            }
-
-
-
-        }
+                    // Event Details Section
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = event.description.trim().ifEmpty { "No Description available" }, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primaryContainer)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val (date, time) = convertMillisToDateTime(event.dateTimeMillis)
+                        EventDetailRow("Created at :", "24-dec-2024", false)
+                        EventDetailRow("Created By :", event.createdBy, false)
+                        EventDetailRow("Date :", date, true)
+                        EventDetailRow("Time :", time, true)
+                    }
+                }
 
         // Shared Section
         Text(
@@ -122,35 +139,41 @@ fun OverviewScreen(eventId: String,
             modifier = Modifier.padding(16.dp)
         )
 
-        // Bottom Navigation Bar (Custom)
-
     }
 }
-// Event Detail Row
+
 @Composable
-fun EventDetailRow(label: String, value: String, icon: ImageVector) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+fun EventDetailRow(label: String, value: String, editable: Boolean) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
-        Text(text = "$label $value", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onTertiary)
-        Icon(imageVector = icon, contentDescription = label, tint = MaterialTheme.colorScheme.tertiary)
-        Spacer(modifier = Modifier.height(22.dp))
+        Row(
+            modifier = Modifier
+                .padding(22.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = "$label $value",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+
+                color = MaterialTheme.colorScheme.onTertiary
+            )
+            if (editable) {
+                Icon(
+                    imageVector = Icons.Default.ArrowRight,
+                    contentDescription = label,
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+            }
+        }
     }
 }
 
-// Custom Bottom Navigation Item
-
-
-
-
-
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewOverviewScreen() {
-   // OverviewScreen("1")
-}

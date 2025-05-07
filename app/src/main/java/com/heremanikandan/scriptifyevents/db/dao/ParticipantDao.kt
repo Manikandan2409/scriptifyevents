@@ -13,7 +13,7 @@ interface ParticipantDao {
 
     // Insert participant
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertParticipant(participant: Participant)
+    suspend fun insertParticipant(participant: Participant) : Long
 
     // Insert multiple participants
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -22,9 +22,11 @@ interface ParticipantDao {
     // Get all participants for a specific event
     @Query("SELECT * FROM participants WHERE eventId = :eventId")
     fun getParticipantsByEventId(eventId: Long): Flow<List<Participant>>
+    @Query("SELECT * FROM participants WHERE rollNo = :rollNo AND eventId= :eventId LIMIT 1")
+    suspend fun getParticipantByRollNO(rollNo:String,eventId: Long): Participant?
 
     // Get participant by ID
-    @Query("SELECT * FROM participants WHERE id = :participantId LIMIT 1")
+    @Query("SELECT * FROM participants WHERE id = :participantId")
     suspend fun getParticipantById(participantId: Long): Participant?
 
     // Delete a participant
@@ -38,4 +40,7 @@ interface ParticipantDao {
     // Delete all participants
     @Query("DELETE FROM participants")
     suspend fun deleteAllParticipants()
+
+
+
 }

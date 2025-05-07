@@ -75,6 +75,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+//     QR SCAN
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+
     // Jetpack Compose dependencies
     implementation("androidx.compose.ui:ui:1.7.8")
     implementation("androidx.compose.material3:material3:1.2.0")
@@ -85,6 +90,23 @@ dependencies {
     implementation("com.google.firebase:firebase-core:9.6.1")
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+// check version
+    implementation("com.google.api-client:google-api-client:1.35.0")
+
+    // Required JSON parser
+
+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.4")
+    implementation("com.google.http-client:google-http-client-jackson2:1.43.3")
+//    check version
+    implementation("com.google.http-client:google-http-client-gson:1.43.3")
+    implementation("com.google.http-client:google-http-client-android:1.43.3")
+
+
+    implementation("com.google.android.gms:play-services-identity:18.1.0")
+
+    // implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
+
     // Firebase BoM (for Firebase Auth if needed)
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
@@ -98,6 +120,7 @@ dependencies {
     // Gmail API
     implementation("com.google.apis:google-api-services-gmail:v1-rev110-1.25.0")
     // Google Calendar API
+
     //implementation("com.google.apis:google-api-services-calendar:v3-rev305-1.25.0")
     implementation ("com.google.apis:google-api-services-calendar:v3-rev20220715-2.0.0")
     // Google Sheets API

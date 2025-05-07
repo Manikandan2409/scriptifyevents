@@ -18,8 +18,8 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["eventId"])]
 )
 data class Reminder(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val eventId: Int,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val eventId: Long,
     val  reminderTimeMillis: Long
 )
 

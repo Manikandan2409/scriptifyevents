@@ -12,7 +12,7 @@ class EventRepo(private val eventDao: EventDao, private val reminderDao: Reminde
 
         // If reminder is enabled, insert reminder
         if (reminderTimeMillis != null) {
-            val reminder = Reminder(eventId = eventId.toInt(), reminderTimeMillis = reminderTimeMillis)
+            val reminder = Reminder(eventId = eventId, reminderTimeMillis = reminderTimeMillis)
             reminderDao.insertReminder(reminder)
         }
         return eventId > 0  // Return true if inserted successfully

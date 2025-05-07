@@ -1,7 +1,6 @@
 
 package com.heremanikandan.scriptifyevents.auth
 
-import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
 import android.util.Log
@@ -19,14 +18,14 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.api.services.calendar.CalendarScopes
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.gmail.GmailScopes
-import com.google.api.services.gmail.GmailScopes.GMAIL_COMPOSE
-import com.google.api.services.gmail.GmailScopes.GMAIL_READONLY
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.slides.v1.SlidesScopes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import com.heremanikandan.scriptifyevents.R
+import com.heremanikandan.scriptifyevents.db.ScriptyManager
+import com.heremanikandan.scriptifyevents.db.model.User
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
@@ -44,57 +43,7 @@ class AuthManager(private val context: Context) {
     }
 
 
-    suspend fun signInWithGoogle(): Boolean {
-        return try {
-            val nonce = UUID.randomUUID().toString()
-            val digest = MessageDigest.getInstance("SHA-256").digest(nonce.toByteArray())
-            val hashedNonce = digest.joinToString("") { "%02x".format(it) }
 
-            val googleIdOption = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false) // Allow new users
-                .setServerClientId(context.getString(R.string.default_web_client_id))
-                .setNonce(hashedNonce)
-                .setAutoSelectEnabled(false)
-                .build()
-
-            val request = GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
-                .build()
-
-            val result = credentialManager.getCredential(context, request)
-            val credential = result.credential
-
-            if (credential is CustomCredential &&
-                credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                val idToken = googleIdTokenCredential.idToken
-
-                val authCredential = GoogleAuthProvider.getCredential(idToken, null)
-                val result = auth.signInWithCredential(authCredential).await()
-
-                val user = auth.currentUser
-
-                sharedPrefManager.saveUser(
-                    uid = user?.uid,
-                    name = user?.displayName,
-                    email = user?.email,
-                    photoUrl = user?.photoUrl
-                )
-
-                Log.d("Auth", "User Signed In: ${user?.email}")
-
-                // ✅ Step 2: Request Additional Scopes
-                requestAdditionalPermissions()
-
-                return true
-            }
-            false
-        } catch (e: Exception) {
-            Log.e("Auth", "Google Sign-In Error: ${e.message}")
-            false
-        }
-    }
 
     suspend fun signInWithGoogle(
         context: Context,
@@ -136,11 +85,20 @@ class AuthManager(private val context: Context) {
                     email = user?.email,
                     photoUrl = user?.photoUrl
                 )
+                val db = ScriptyManager.getInstance(context)
+                val dbusers=db.userDao()
+                val newUser =User(
+                    uid = user?.uid.toString(),
+                    name = user?.displayName.toString(),
+                    email = user?.email.toString(),
+                    disabled = false
+                )
+                dbusers.insertUser(newUser)
 
                 Log.d("Auth", "User Signed In: ${user?.email}")
 
                 // ✅ Step 2: Request Additional Scopes using Launcher
-                requestAdditionalPermissions(context, activityResultLauncher)
+                requestAdditionalPermissionsIfNeeded(context, activityResultLauncher)
                 Log.d("Auth", "RETURNING TRUE")
                 return true
             }
@@ -152,62 +110,77 @@ class AuthManager(private val context: Context) {
     }
 
 
-    fun requestAdditionalPermissions() {
-        val requestedScopes = listOf(
-            Scope(DriveScopes.DRIVE_FILE),
-            Scope(GMAIL_READONLY),
-            Scope(GMAIL_COMPOSE),
-            Scope(CalendarScopes.CALENDAR),
-            Scope(SheetsScopes.SPREADSHEETS),
-            Scope(SlidesScopes.PRESENTATIONS)
-        )
-
-        val authorizationRequest = AuthorizationRequest.builder()
-            .setRequestedScopes(requestedScopes)
-            .build()
-
-        Identity.getAuthorizationClient(context)
-            .authorize(authorizationRequest)
-            .addOnSuccessListener { authorizationResult ->
-                if (authorizationResult.hasResolution()) {
-                    // Request user approval
-                    val pendingIntent = authorizationResult.getPendingIntent()
-                    try {
-                        if (pendingIntent != null) {
-                            (context as Activity).startIntentSenderForResult(
-                                pendingIntent.intentSender, REQUEST_AUTHORIZE,
-                                null, 0, 0, 0, null
-                            )
-                        }
-                    } catch (e: IntentSender.SendIntentException) {
-                        Log.e("Authorization", "Couldn't start Authorization UI: ${e.localizedMessage}")
-                    }
-                } else {
-                    // ✅ Access granted, save permissions
-                    saveUserPermissions()
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
-            }
-    }
 
 
-    fun requestAdditionalPermissions(
+//    fun requestAdditionalPermissions(
+//        context: Context,
+//        activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
+//    ) {
+//        val requestedScopes = listOf(
+//            Scope(DriveScopes.DRIVE_FILE),
+//            Scope(GmailScopes.GMAIL_READONLY),
+//            Scope(GmailScopes.GMAIL_COMPOSE),
+//            Scope(CalendarScopes.CALENDAR),
+//            Scope(SheetsScopes.SPREADSHEETS),
+//            Scope(SlidesScopes.PRESENTATIONS)
+//        )
+//
+//        val authorizationRequest = AuthorizationRequest.builder()
+//            .setRequestedScopes(requestedScopes)
+//            .build()
+//
+//        Identity.getAuthorizationClient(context)
+//            .authorize(authorizationRequest)
+//            .addOnSuccessListener { authorizationResult ->
+//                if (authorizationResult.hasResolution()) {
+//                    val pendingIntent = authorizationResult.getPendingIntent()
+//                    Log.d("Auth", "Requesting user approval")
+//                    try {
+//                        val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent!!).build()
+//                        activityResultLauncher.launch(intentSenderRequest) // ✅ Use registered launcher
+//                    } catch (e: IntentSender.SendIntentException) {
+//                        Log.e("Authorization", "Couldn't start Authorization UI: ${e.localizedMessage}")
+//                    }
+//                } else {
+//                    Log.d("Auth", "Saving the permissions")
+//                    saveUserPermissionsLocally()
+//                }
+//            }
+//            .addOnFailureListener { e ->
+//                Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
+//            }
+//    }
+
+
+    fun requestAdditionalPermissionsIfNeeded(
         context: Context,
         activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
     ) {
-        val requestedScopes = listOf(
-            Scope(DriveScopes.DRIVE_FILE),
-            Scope(GmailScopes.GMAIL_READONLY),
-            Scope(GmailScopes.GMAIL_COMPOSE),
-            Scope(CalendarScopes.CALENDAR),
-            Scope(SheetsScopes.SPREADSHEETS),
-            Scope(SlidesScopes.PRESENTATIONS)
-        )
+        val TAG = "REQUEST_PERMISSIONS"
+        Log.d(TAG,"Start of checkign the permission")
+        val user = auth.currentUser ?: return
+        val userUid = user.uid
+        val currentPermissions = sharedPrefManager.getPermissionsForUser(userUid)
+
+        val requiredScopes = mutableListOf<Scope>()
+
+        if (!currentPermissions["drive"]!!) requiredScopes.add(Scope(DriveScopes.DRIVE_FILE))
+        if (!currentPermissions["gmail"]!!) {
+            requiredScopes.add(Scope(GmailScopes.GMAIL_READONLY))
+            requiredScopes.add(Scope(GmailScopes.GMAIL_COMPOSE))
+        }
+        if (!currentPermissions["calendar"]!!) requiredScopes.add(Scope(CalendarScopes.CALENDAR))
+        if (!currentPermissions["sheets"]!!) requiredScopes.add(Scope(SheetsScopes.SPREADSHEETS))
+        if (!currentPermissions["slides"]!!) requiredScopes.add(Scope(SlidesScopes.PRESENTATIONS))
+
+        Log.d(TAG,"SEETED ALL THE PERMISSION")
+        if (requiredScopes.isEmpty()) {
+            Log.d("Auth", "All permissions already granted for $userUid")
+            return
+        }
 
         val authorizationRequest = AuthorizationRequest.builder()
-            .setRequestedScopes(requestedScopes)
+            .setRequestedScopes(requiredScopes)
             .build()
 
         Identity.getAuthorizationClient(context)
@@ -215,28 +188,40 @@ class AuthManager(private val context: Context) {
             .addOnSuccessListener { authorizationResult ->
                 if (authorizationResult.hasResolution()) {
                     val pendingIntent = authorizationResult.getPendingIntent()
-                    Log.d("Auth", "Requesting user approval")
+                    Log.d(TAG,"going to invoke al the permissions")
                     try {
                         val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent!!).build()
-                        activityResultLauncher.launch(intentSenderRequest) // ✅ Use registered launcher
+                        activityResultLauncher.launch(intentSenderRequest)
                     } catch (e: IntentSender.SendIntentException) {
                         Log.e("Authorization", "Couldn't start Authorization UI: ${e.localizedMessage}")
                     }
                 } else {
-                    Log.d("Auth", "Saving the permissions")
-                    saveUserPermissions()
+                    val grantedScopes = requiredScopes.map { it.scopeUri }
+                    saveUserPermissionsLocally(userUid, grantedScopes)
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
             }
     }
-
 
 
     /**
      * Store granted permissions in Firebase
      */
+
+    fun saveUserPermissionsLocally(userUid: String, grantedScopes: List<String>) {
+        val permissions = mapOf(
+            "drive" to grantedScopes.any { it.contains("drive") },
+            "gmail" to grantedScopes.any { it.contains("gmail") },
+            "calendar" to grantedScopes.any { it.contains("calendar") },
+            "sheets" to grantedScopes.any { it.contains("spreadsheets") },
+            "slides" to grantedScopes.any { it.contains("presentations") }
+        )
+        sharedPrefManager.savePermissionsForUser(userUid, permissions)
+        Log.d("Permissions", "Saved locally for user $userUid: $permissions")
+    }
+
 
 
     fun saveUserPermissions() {
@@ -250,33 +235,15 @@ class AuthManager(private val context: Context) {
             "slides" to true
         )
 
-        FirebaseDatabase.getInstance().getReference("users/${user.uid}/permissions")
-            .setValue(permissions)
-            .addOnSuccessListener {
-                Log.d("Permissions", "User permissions saved successfully!")
-            }
-            .addOnFailureListener {
-                Log.e("Permissions", "Failed to save permissions: ${it.message}")
-            }
+//        FirebaseDatabase.getInstance().getReference("users/${user.uid}/permissions")
+//            .setValue(permissions)
+//            .addOnSuccessListener {
+//                Log.d("Permissions", "User permissions saved successfully!")
+//            }
+//            .addOnFailureListener {
+//                Log.e("Permissions", "Failed to save permissions: ${it.message}")
+//            }
     }
-
-//    private fun storeUserPermissions(uid: String?, email: String?) {
-//        uid?.let {
-//            val userRef = FirebaseDatabase.getInstance().getReference("users").child(it)
-//            val userData = mapOf(
-//                "email" to email,
-//                "permissions" to listOf(
-//                    "drive_file",
-//                    "gmail_read",
-//                    "gmail_compose",
-//                    "calendar",
-//                    "sheets",
-//                    "slides"
-//                )
-//            )
-//            userRef.setValue(userData)
-//        }
-//    }
 
 
 

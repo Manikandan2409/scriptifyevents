@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heremanikandan.scriptifyevents.R
-import com.heremanikandan.scriptifyevents.components.SearchAndSortBar
+import com.heremanikandan.scriptifyevents.components.ParticipantSearchAndSortBar
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import com.heremanikandan.scriptifyevents.utils.files.Excel
@@ -91,7 +91,7 @@ fun ParticipantsScreen(
                 .fillMaxSize()
                 .padding(bottom = 72.dp) // Reserve space for FAB to avoid overlap
         ) {
-            SearchAndSortBar(viewModel, isGridView) {
+            ParticipantSearchAndSortBar(viewModel, isGridView) {
                 isGridView = !isGridView
             }
 
@@ -129,8 +129,6 @@ fun ParticipantsScreen(
                     filePickerLauncher.launch(intent)
                 }
             )
-
-
         }
     }
 }
@@ -165,7 +163,6 @@ fun ParticipantGridItem(participant: Participant, onDelete: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Delete Participant",
-                tint = Color.Red,
                 modifier = Modifier.size(24.dp)
             )
             Text(text = participant.name, fontSize = 16.sp)

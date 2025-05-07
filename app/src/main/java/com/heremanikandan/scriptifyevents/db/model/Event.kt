@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "event")
 data class Event(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val name: String,
     val description: String,
     val createdBy :String,
@@ -15,5 +15,8 @@ data class Event(
     val isOngoing: Boolean,
     val isWaiting: Boolean,
     val disabled: Boolean,
+    val participants :Long,
+    val unknown: Long,
+    val spreadSheetId: String
 )
 

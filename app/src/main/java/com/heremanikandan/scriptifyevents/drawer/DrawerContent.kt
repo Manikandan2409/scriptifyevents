@@ -65,15 +65,7 @@ fun performLogout(navController: NavHostController,context: Context, coroutineSc
     coroutineScope.launch {
         drawerState.close() // Close drawer after logout
     }
-    // Clear back stack and navigate to the WelcomeScreen
-//    navController.navigate(Screen.Welcome.route) {
-////        popUpTo(0) { inclusive = true } // Clears entire back stack
-//        popUpTo(0) {
-//          //  saveState = true
-//            inclusive= false
-//        }
-//        launchSingleTop = true
-//    }
+
     restartApp(context)
 }
 // Function to restart the app

@@ -23,9 +23,13 @@ interface EventDao {
     fun deleteEvent(event: Event)
 
     @Query("SELECT COUNT(*) FROM event WHERE id = :eventId")
-    suspend fun isEventExists(eventId: Int): Int
+    suspend fun isEventExists(eventId: Long): Int
 
-    @Query("SELECT * FROM event WHERE name = :eventName LIMIT 1")
+    @Query("SELECT * FROM event WHERE name = :eventName ")
     fun getEventByName(eventName: String): Event?
+
+    @Query("UPDATE event SET spreadsheetId = :spreadsheetId WHERE id = :eventId")
+    suspend fun updateSpreadsheetId(eventId: Long, spreadsheetId: String)
+
 
 }

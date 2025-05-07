@@ -18,10 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,129 +60,7 @@ import com.heremanikandan.scriptifyevents.viewModel.HomeViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.HomeViewModelFactory
 
 
-//@Composable
-//fun HomeScreen(navController: NavController) {
-//    val snackbarHostState = remember { SnackbarHostState() }
-//    val coroutineScope = rememberCoroutineScope()
-//    val context = LocalContext.current
-//    val localEvents = ScriptyManager.getInstance(context).EventDao()
-//    val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(localEvents))
-//
-//    val events by viewModel.events.collectAsState()
-//    var searchText by remember { mutableStateOf(TextFieldValue("")) }
-//    var showFilterMenu by remember { mutableStateOf(false) }
-//    val sharedPrefManager = SharedPrefManager(context)
-//
-//    Box(
-//        Modifier
-//            .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.onPrimary)
-//    ) {
-//        Column {
-//            // SEARCH & SORT BAR
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp),
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                OutlinedTextField(
-//                    value = searchText,
-//                    onValueChange = {
-//                        searchText = it
-//                        viewModel.updateSearchQuery(it.text)
-//                    },
-//                    label = { Text("Search Events") },
-//                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-//                    modifier = Modifier.weight(1f),
-//                    shape = RoundedCornerShape(22),
-//                    singleLine = true
-//                )
-//
-//                Spacer(modifier = Modifier.width(8.dp))
-//
-//                // SORT BUTTONS
-//                IconButton(onClick = { viewModel.toggleSortByDate() }) {
-//                    Icon(Icons.Filled.Sort, contentDescription = "Sort by Date")
-//                }
-//                IconButton(onClick = { viewModel.toggleSortByName() }) {
-//                    Icon(Icons.Filled.Sort, contentDescription = "Sort by Name")
-//                }
-//
-//                // FILTER MENU
-//                Box {
-//                    Button(onClick = { showFilterMenu = true }) {
-//                        Text("Filter")
-//                    }
-//                    DropdownMenu(
-//                        expanded = showFilterMenu,
-//                        onDismissRequest = { showFilterMenu = false }
-//                    ) {
-//                        DropdownMenuItem(
-//                            text = { Text("All") },
-//                            onClick = {
-//                                viewModel.setFilterByCreator("")
-//                                showFilterMenu = false
-//                            }
-//                        )
-//                        DropdownMenuItem(
-//                            text = { Text(sharedPrefManager.getUserName()!!) },
-//                            onClick = {
-//                                viewModel.setFilterByCreator("Your Name") // Change to actual user name
-//                                showFilterMenu = false
-//                            }
-//                        )
-//                    }
-//                }
-//            }
-//
-//            // EVENT LIST
-//            if (events.isEmpty()) {
-//                EmptyState()
-//            } else {
-//                LazyColumn(modifier = Modifier.fillMaxSize()) {
-//                    items(events) { event ->
-//                        val (date, time) = convertMillisToDateTime(event.dateTimeMillis)
-//                        EventCard(
-//                            name = event.name,
-//                            description = event.description,
-//                            createdDate = "2025-02-11",
-//                            eventDate = date,
-//                            eventTime = time,
-//                            createdBy = event.createdBy,
-//                            imageRes = R.drawable.ic_launcher_foreground
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//
-//        // FLOATING BUTTON
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp),
-//            contentAlignment = Alignment.BottomEnd
-//        ) {
-//            FloatingActionButton(
-//                onClick = { navController.navigate(Screen.AddEvent.route) },
-//                modifier = Modifier.size(72.dp)
-//            ) {
-//                Icon(Icons.Filled.Add, contentDescription = "Add")
-//            }
-//        }
-//
-//        // Snackbar Host
-//        SnackbarHost(
-//            hostState = snackbarHostState,
-//            modifier = Modifier.align(Alignment.BottomCenter)
-//        )
-//    }
-//}
-
-
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -212,17 +94,30 @@ fun HomeScreen(navController: NavController) {
                         viewModel.updateSearchQuery(it.text)
                     },
                     label = { Text("Search Events") },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onTertiary) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(22),
-                    singleLine = true
+                    singleLine = true,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.onTertiary,     // Border color when focused
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,   // Border color when not focused
+                        focusedLabelColor = MaterialTheme.colorScheme.primaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onTertiary,
+                        focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+
+                    )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
 
                 // SORT DROPDOWN
                 Box {
                     Button(onClick = { showSortMenu = true }) {
-                        Text("Sort")
+//                        Text("Sort")
+                        Icon(
+                            imageVector = Icons.Default.Sort,
+                            contentDescription = "Sort",
+                            tint = MaterialTheme.colorScheme.onTertiary
+                        )
                     }
                     DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
                         DropdownMenuItem(text = { Text("Ascending") }, onClick = {
@@ -241,7 +136,13 @@ fun HomeScreen(navController: NavController) {
                 // FILTER DROPDOWN
                 Box {
                     Button(onClick = { showFilterMenu = true }) {
-                        Text("Filter")
+//                        Text("Filter")
+                        Icon(
+                            imageVector = Icons.Default.FilterAlt,
+                            contentDescription = "Filter",
+                            tint = MaterialTheme.colorScheme.onTertiary
+
+                        )
                     }
                     DropdownMenu(expanded = showFilterMenu, onDismissRequest = { showFilterMenu = false }) {
                         DropdownMenuItem(text = { Text("All") }, onClick = {

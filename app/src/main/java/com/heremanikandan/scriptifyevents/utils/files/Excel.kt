@@ -3,7 +3,9 @@ package com.heremanikandan.scriptifyevents.utils.files
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
+import com.heremanikandan.scriptifyevents.db.dto.AttendanceDTO
 import com.heremanikandan.scriptifyevents.db.model.Participant
+import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
 import org.apache.poi.ss.usermodel.WorkbookFactory
 
 object Excel {
@@ -49,5 +51,89 @@ object Excel {
 
         return participants
     }
+
+
+//    fun exportToExcel(context: android.content.Context,eventName:String,uri:Uri, attendanceList: List<AttendanceDTO>) {
+//        val workbook = WorkbookFactory.create(true)
+//        val sheet = workbook.createSheet("Attendance")
+//
+//        val headerRow = sheet.createRow(0)
+//        headerRow.createCell(0).setCellValue("S.No")
+//        headerRow.createCell(1).setCellValue("Roll No")
+//        headerRow.createCell(2).setCellValue("name")
+//        headerRow.createCell(3).setCellValue("email")
+//        headerRow.createCell(4).setCellValue("course")
+//        headerRow.createCell(5).setCellValue("Scanned By")
+//        headerRow.createCell(6).setCellValue("Date Time")
+//
+//        attendanceList.forEachIndexed { index, attendance ->
+//            val row = sheet.createRow(index + 1)
+//            row.createCell(0).setCellValue((index+1).toString())
+//            row.createCell(1).setCellValue(attendance.rollNo)
+//            row.createCell(2).setCellValue(attendance.name)
+//            row.createCell(3).setCellValue(attendance.email)
+//            row.createCell(4).setCellValue(attendance.course)
+//            row.createCell(5).setCellValue(attendance.ScannedBy)
+//            val (date,time) = convertMillisToDateTime(attendance.dateTimeInMillis)
+//            row.createCell(6).setCellValue("$date:$time")
+//        }
+//
+//        val fileName = "Attendance_${eventName}.xlsx"
+//        val file = File(context.getExternalFilesDir(null), fileName)
+//
+//        FileOutputStream(file).use { outputStream ->
+//            workbook.write(outputStream)
+//            outputStream.close()
+//        }
+//
+//        Toast.makeText(context, "$fileName Exported", Toast.LENGTH_LONG).show()
+//    }
+
+    fun exportToExcel(
+        context: Context,
+        eventName: String,
+        attendanceList: List<AttendanceDTO>,
+        uri: Uri
+    ) {
+        try {
+            val workbook = WorkbookFactory.create(true)
+            val sheet = workbook.createSheet("Attendance")
+
+            val headerRow = sheet.createRow(0)
+            headerRow.createCell(0).setCellValue("S.No")
+            headerRow.createCell(1).setCellValue("Roll No")
+            headerRow.createCell(2).setCellValue("Name")
+            headerRow.createCell(3).setCellValue("Email")
+            headerRow.createCell(4).setCellValue("Course")
+            headerRow.createCell(5).setCellValue("Scanned By")
+            headerRow.createCell(6).setCellValue("Date Time")
+
+            attendanceList.forEachIndexed { index, attendance ->
+                val row = sheet.createRow(index + 1)
+                row.createCell(0).setCellValue((index + 1).toString())
+                row.createCell(1).setCellValue(attendance.rollNo)
+                row.createCell(2).setCellValue(attendance.name)
+                row.createCell(3).setCellValue(attendance.email)
+                row.createCell(4).setCellValue(attendance.course)
+                row.createCell(5).setCellValue(attendance.ScannedBy)
+                val (date, time) = convertMillisToDateTime(attendance.dateTimeInMillis)
+                row.createCell(6).setCellValue("$date $time")
+            }
+
+            val outputStream = context.contentResolver.openOutputStream(uri)
+            if (outputStream != null) {
+                workbook.write(outputStream)
+                outputStream.close()
+                workbook.close()
+                Toast.makeText(context, "Excel exported successfully!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Failed to open output stream", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Export failed: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
 
 }

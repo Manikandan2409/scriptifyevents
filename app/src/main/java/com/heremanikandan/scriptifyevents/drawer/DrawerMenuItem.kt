@@ -28,7 +28,7 @@ fun DrawerMenuItem(title: String, icon: ImageVector, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(imageVector = icon,
-            tint = MaterialTheme.colorScheme.onTertiary
+            tint = MaterialTheme.colorScheme.tertiary
             ,contentDescription = null, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(16.dp))
         Text(title, fontSize = 16.sp, color = MaterialTheme.colorScheme.onTertiary)

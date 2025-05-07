@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun EventCard(
-    id:Int,
+    id:Long,
     name: String,
     description:String,
     createdDate: String,
@@ -41,7 +41,7 @@ fun EventCard(
     eventTime: String,
     createdBy:String,
     imageRes: Int,
-    onClick :(Int) ->Unit
+    onClick :(Long) ->Unit
 ) {
 
     val elevated by remember { mutableStateOf(false) }

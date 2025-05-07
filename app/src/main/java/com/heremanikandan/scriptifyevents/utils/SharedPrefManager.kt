@@ -49,4 +49,23 @@ class SharedPrefManager(context: Context) {
             }
         }
     }
+
+
+    fun savePermissionsForUser(userUid: String, permissions: Map<String, Boolean>) {
+        val editor = prefs.edit()
+        permissions.forEach { (key, value) ->
+            editor.putBoolean("${userUid}_$key", value)
+        }
+        editor.apply()
+    }
+
+    fun getPermissionsForUser(userUid: String): Map<String, Boolean> {
+        val keys = listOf("drive", "gmail", "calendar", "sheets", "slides")
+        return keys.associateWith { prefs.getBoolean("${userUid}_$it", false) }
+    }
+
+
+
+
+
 }

@@ -12,9 +12,12 @@ val Pink40 = Color(0xFF7D5260)
 
 val Red40=Color(0xFFFF2E2E)
 
+val mildRed = Color(0xFF522e2b)
+
 val Green60=Color(0xFF7AC460)
 
 val Yellow60 =Color(0xFFFFC059)
+val Yellow20 = Color(0xFFf2d37e)
 
 // 🌙 Dark Theme Colors
 val dark = Color(0xFF222222) // Fix: Added `FF` for full opacity
