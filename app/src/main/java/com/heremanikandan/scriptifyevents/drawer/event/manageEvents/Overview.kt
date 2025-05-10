@@ -2,6 +2,7 @@ package com.heremanikandan.scriptifyevents.drawer.event.manageEvents
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -28,8 +31,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,7 @@ fun OverviewScreen(eventId: Long,
                    participantDao: ParticipantDao,
                    attendanceDao: AttendanceDao,
                    sharedWithDao: SharedWithDao,
+                    editable :() -> Unit,
                    viewModel: OverviewViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                        factory = OverviewViewModelFactory(eventId, eventDao,participantDao,attendanceDao, sharedWithDao)
                    )
@@ -58,7 +64,7 @@ fun OverviewScreen(eventId: Long,
     val totalParticipants by viewModel.totalParticipants.collectAsState()
     val totalattendees by viewModel.totalAttendes.collectAsState()
     val totalDepartments by viewModel.totalDepartment.collectAsState()
-
+    val context = LocalContext.current
     //val sharedWithList by viewModel.sharedWithList.collectAsState()
     Column(
         modifier = Modifier
@@ -66,6 +72,7 @@ fun OverviewScreen(eventId: Long,
             .background(MaterialTheme.colorScheme.onPrimary) // Light yellow background
             .verticalScroll(rememberScrollState())
     ) {
+
 
         Box(
             modifier = Modifier
@@ -81,7 +88,7 @@ fun OverviewScreen(eventId: Long,
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = Modifier
                         .size(160.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -90,7 +97,13 @@ fun OverviewScreen(eventId: Long,
                         Row(
                             modifier = Modifier
                                 .padding(18.dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .shadow(
+                                    elevation = 8.dp,
+                                    shape = CircleShape,
+                                    ambientColor = MaterialTheme.colorScheme.onSecondary,
+                                    spotColor = MaterialTheme.colorScheme.onSecondary
+                                ),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -111,8 +124,12 @@ fun OverviewScreen(eventId: Long,
                     Row(
                         modifier = Modifier
                             .padding(18.dp)
+                        .clickable {
+                            editable()
+                        }
                             ,
                         verticalAlignment = Alignment.CenterVertically
+
                     ) {
                         eventDetails?.let { event ->
                             Text(
@@ -123,6 +140,12 @@ fun OverviewScreen(eventId: Long,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
                         }
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = MaterialTheme.colorScheme.onTertiary,
+
+                        )
                     }
 
             }
@@ -169,36 +192,52 @@ fun OverviewScreen(eventId: Long,
     }
 }
 
+
 @Composable
 fun EventDetailRow(label: String, value: String, editable: Boolean) {
-    Card(
+    Box( // Simulates shadow with color
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(22.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Text(
-                text = "$label $value",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-
-                color = MaterialTheme.colorScheme.onTertiary
+            .padding(vertical = 4.dp)
+            .shadow(
+                elevation = 4.dp,
+                shape = CircleShape,
+                ambientColor = MaterialTheme.colorScheme.onSecondary,
+                spotColor = MaterialTheme.colorScheme.onSecondary
             )
-            if (editable) {
-                Icon(
-                    imageVector = Icons.Default.ArrowRight,
-                    contentDescription = label,
-                    tint = MaterialTheme.colorScheme.onTertiary
+            .padding(2.dp) // Space between shadow and card
+        ,
+
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(0.dp), // Remove native shadow
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(22.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$label $value",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onTertiary
                 )
+                if (editable) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowRight,
+                        contentDescription = label,
+                        tint = MaterialTheme.colorScheme.onTertiary
+                    )
+                }
             }
         }
     }

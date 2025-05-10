@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.drawer.event.AddEvent
 import com.heremanikandan.scriptifyevents.drawer.event.EventScreen
@@ -33,10 +35,23 @@ fun SideBarNavigationHost(navController: NavHostController, modifier: Modifier =
             composable(Screen.Home.route) { HomeScreen(navController) }
             composable(Screen.Settings.route) { SettingsScreen(navController) }
             composable(Screen.Profile.route) { ProfileScreen(navController) }
-            composable(Screen.AddEvent.route) { AddEvent(navController = navController) }
+         //   composable(Screen.AddEvent.route) { AddEvent(navController = navController) }
+            composable(
+                route = "AddEvent?eventId={eventId}",
+                arguments = listOf(
+                    navArgument("eventId") {
+                        type = NavType.LongType
+                        defaultValue = Long.MIN_VALUE
+                    }
+                )
+            ) { backStackEntry ->
+                val eventId = backStackEntry.arguments?.getLong("eventId") ?: Long.MIN_VALUE
+                AddEvent(navController = navController, eventId = eventId)
+            }
+
             composable("eventDetails/{eventId}") { backStackEntry ->
                 val eventId = backStackEntry.arguments?.getString("eventId") ?: "0"
-                EventScreen(eventId)
+                EventScreen(eventId,navController)
             }
 
             // Add the WelcomeScreen route to navigate after logout

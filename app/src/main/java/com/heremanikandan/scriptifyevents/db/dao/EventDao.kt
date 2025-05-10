@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.heremanikandan.scriptifyevents.db.model.Event
 import kotlinx.coroutines.flow.Flow
 
@@ -14,11 +15,16 @@ interface EventDao {
     fun insertEvent(event: Event): Long
 
     @Query("SELECT * FROM event WHERE id = :id")
-    suspend fun getEventById(id: Long): Event?
+    fun getEventByIdFlow(id: Long):Flow<Event?>
+
+    @Query("SELECT * FROM event WHERE id = :id")
+    suspend fun getEventById(id: Long):Event?
 
     @Query("SELECT * FROM event")
     fun getAllEvents(): Flow<List<Event>>
 
+    @Update
+    suspend fun updateEvent(event: Event)
     @Delete
     fun deleteEvent(event: Event)
 
@@ -27,9 +33,6 @@ interface EventDao {
 
     @Query("SELECT * FROM event WHERE name = :eventName ")
     fun getEventByName(eventName: String): Event?
-
-    @Query("UPDATE event SET spreadsheetId = :spreadsheetId WHERE id = :eventId")
-    suspend fun updateSpreadsheetId(eventId: Long, spreadsheetId: String)
 
 
 }

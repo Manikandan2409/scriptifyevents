@@ -27,15 +27,13 @@ class AddEventViewModel(private val eventDao: EventDao) : ViewModel() {
     suspend fun getEventById(id: Long): Event? {
         return eventDao.getEventById(id)
     }
-    fun updateSpreadsheetId(eventId: Long, spreadsheetId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                eventDao.updateSpreadsheetId(eventId, spreadsheetId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+
+    suspend fun updateEvent(event: Event){
+        viewModelScope.launch {
+            eventDao.updateEvent(event)
         }
     }
+
 
 
     suspend fun isEventNameExists(eventName: String): Boolean {

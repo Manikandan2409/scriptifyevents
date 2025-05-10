@@ -23,7 +23,7 @@ class OverviewViewModel(
 ) : ViewModel() {
 
     private val _eventDetails = MutableStateFlow<Event?>(null)
-    val eventDetails: StateFlow<Event?> = _eventDetails
+    var eventDetails: StateFlow<Event?> = _eventDetails
     private val _participantCount = MutableStateFlow<Long>(0)
     var totalParticipants :StateFlow<Long> = _participantCount
     private  val _attendeesCount = MutableStateFlow<Long>(0)
@@ -43,7 +43,8 @@ class OverviewViewModel(
 
     private fun getEventDetails() {
         viewModelScope.launch {
-            _eventDetails.value = eventDao.getEventById(eventId)
+           eventDao.getEventByIdFlow(eventId).collect{ _eventDetails.value = it }
+
         }
     }
 

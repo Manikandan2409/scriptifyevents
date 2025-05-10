@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.heremanikandan.scriptifyevents.db.dto.AttendanceDTO
@@ -82,18 +83,30 @@ fun AttendanceItem(attendance: AttendanceDTO) {
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .fillMaxWidth()
+            .shadow(elevation = 4.dp,
+                ambientColor = MaterialTheme.colorScheme.onPrimary,
+                spotColor = MaterialTheme.colorScheme.primary)
+        ,
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors =  CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        )
+
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier
+            .padding(16.dp)
+        //    .background(MaterialTheme.colorScheme.onSecondary)
+        )
+        {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Delete Participant",
-                modifier = Modifier.size(24.dp)
+                tint = MaterialTheme.colorScheme.primaryContainer
             )
-            Text(text = "Name: ${attendance.name}", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Name: ${attendance.name}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onTertiary)
             val (date,time)  = convertMillisToDateTime(attendance.dateTimeInMillis)
-            Text(text = "Roll No: ${attendance.rollNo} attended at $date:$time ", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Roll No: ${attendance.rollNo} attended at $date:$time ", style = MaterialTheme.typography.bodyMedium, color =  MaterialTheme.colorScheme.onTertiary)
         }
     }
 }
@@ -131,7 +144,7 @@ fun AttendanceManageActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, 
                     onClick = onAddClick,
                     modifier = Modifier
                         .size(42.dp)
-                        .offset(x = (-56).dp ) // move leftwards
+                        .offset(x = (-56).dp) // move leftwards
                     ,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     contentColor = MaterialTheme.colorScheme.surface

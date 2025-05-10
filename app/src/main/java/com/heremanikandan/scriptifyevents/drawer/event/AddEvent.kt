@@ -1,7 +1,6 @@
 package com.heremanikandan.scriptifyevents.drawer.event
 
 import android.app.Activity
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -26,6 +25,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,18 +40,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.heremanikandan.scriptifyevents.components.DatePickerField
 import com.heremanikandan.scriptifyevents.components.TimePickerField
 import com.heremanikandan.scriptifyevents.components.isExactAlarmPermissionGranted
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.model.Event
+import com.heremanikandan.scriptifyevents.db.model.EventStatus
 import com.heremanikandan.scriptifyevents.db.model.Reminder
 import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
-import com.heremanikandan.scriptifyevents.utils.connections.Permission
-import com.heremanikandan.scriptifyevents.utils.connections.SpreadSheet
+import com.heremanikandan.scriptifyevents.utils.convertToMillis
 import com.heremanikandan.scriptifyevents.utils.notification.scheduleNotification
 import com.heremanikandan.scriptifyevents.viewModel.AddEventViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.AddEventViewModelFactory
@@ -66,14 +64,24 @@ import java.util.Locale
 
 @Composable
 fun AddEvent(
-   navController: NavController
+    navController: NavController,
+     eventId:Long
 ) {
 
     val context = LocalContext.current
+    val sharedPrefManager = SharedPrefManager(context)
+    val localDbEvent  = ScriptyManager.getInstance(context).EventDao()
+    val localReminder = ScriptyManager.getInstance(context).ReminderDao()
+    val viewModel: AddEventViewModel = viewModel(factory = AddEventViewModelFactory(localDbEvent))
+    val coroutineScope = rememberCoroutineScope()
+
+
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
     val today = remember { Calendar.getInstance() }
     val maxEventDate = remember { Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 30) } }
+    val existingEvent = remember { mutableStateOf<Event?>(null) }
+
     var eventName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var eventDate by remember { mutableStateOf(today.time) }
@@ -81,14 +89,35 @@ fun AddEvent(
     var isReminderEnabled by remember { mutableStateOf(false) }
     var reminderDate by remember { mutableStateOf(today.time) }
     var reminderTime by remember { mutableStateOf(today.time) }
+
     var eventNameError by remember { mutableStateOf<String?>(null) }
     var eventDateError by remember { mutableStateOf<String?>(null) }
     var reminderDateError by remember { mutableStateOf<String?>(null) }
-    val localDbEvent  = ScriptyManager.getInstance(context).EventDao()
-    val localReminder = ScriptyManager.getInstance(context).ReminderDao()
-    val sharedPrefManager = SharedPrefManager(context)
-    val viewModel: AddEventViewModel = viewModel(factory = AddEventViewModelFactory(localDbEvent))
-    val coroutineScope = rememberCoroutineScope()
+
+    // Load event from ViewModel if editing
+    LaunchedEffect(key1 = eventId) {
+        if (eventId != Long.MIN_VALUE) {
+            val event = viewModel.getEventById(eventId)
+            event?.let {
+                existingEvent.value = it
+                eventName = it.name
+                description = it.description
+                eventDate = Date(it.dateTimeMillis)
+                eventTime = Date(it.dateTimeMillis)
+
+            }
+        }
+    }
+
+    val activityResultLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.d("Auth", "Additional permissions granted successfully")
+            } else {
+                Log.e("Auth", "User denied additional permissions")
+            }
+        }
 
     fun validateEventDate(date: Date) {
         val selectedDate = Calendar.getInstance().apply { time = date }
@@ -130,43 +159,6 @@ fun AddEvent(
     eventNameError = null
     return true
 }
-    val activityResultLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                Log.d("Auth", "Additional permissions granted successfully")
-            } else {
-                Log.e("Auth", "User denied additional permissions")
-            }
-        }
-
-    fun convertToMillis(dateStr: String, timeStr: String): Long {
-//        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-//        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-
-        val date = dateFormatter.parse(dateStr) // Parse date
-        val time = timeFormatter.parse(timeStr) // Parse time
-
-        val calendar = Calendar.getInstance()
-        calendar.time = date ?: return -1 // Set date
-
-        val timeCalendar = Calendar.getInstance()
-        timeCalendar.time = time ?: return -1
-
-        // Set parsed time (hour, minute) into the date calendar
-        calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
-        calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-
-        return calendar.timeInMillis // Convert to milliseconds
-    }
-
-    fun showToast(context: Context, message: String) {
-        Handler(Looper.getMainLooper()).post {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     suspend fun getEventByName(eventName: String): Event? {
         return withContext(Dispatchers.IO) {
@@ -193,28 +185,29 @@ fun AddEvent(
             Log.d("TIME IN MILLIS ","date time in millis $dateTimeMillis")
 
 
+            existingEvent.value?.let {
+                    event ->
+                val updatedEvent = event.copy(
+                    name=eventName,
+                    description = description,
+                    dateTimeMillis = dateTimeMillis,
+                )
+                viewModel.updateEvent(updatedEvent)
+                navController.popBackStack()
+                return
+            }
             val newEvent= Event(
                 name =  eventName,
                 description = description,
                 dateTimeMillis = dateTimeMillis,
-                disabled = false,
-                isCompleted = false,
-                isOngoing = false,
-                isWaiting = true,
+                status = EventStatus.WAITING,
                 reminder = isReminderEnabled,
                 createdBy = sharedPrefManager.getUserName()!!,
-                participants = 0,
-                unknown = 0,
-                spreadSheetId = ""
-
             )
-
-
 
             viewModel.insertEvent(newEvent) { isSuccess ->
                 Handler(Looper.getMainLooper()).post {
                     if (isSuccess) {
-                        val permission = Permission(context)
                         val reminderDateStr = dateFormatter.format(reminderDate)
                         val reminderTimeStr = timeFormatter.format(reminderTime)
                         val reminderTimeMillis = convertToMillis(reminderDateStr, reminderTimeStr)
@@ -227,27 +220,13 @@ fun AddEvent(
                                 )
 
                                 withContext(Dispatchers.Main) {
-                                    val userUid = sharedPrefManager.getUserUid()!!
-//                                   to-do ,create a google sheet
-//                                      permission.requestPermissionIfMissing(
-//                                        userUid = userUid,
-//                                        key = "sheets",
-//                                        activityResultLauncher = activityResultLauncher,
-//                                        onGranted = {
-//                                            createAndStoreSpreadSheet(context, viewModel, event)
-//                                        },
-//                                        onLater = {
-//                                            Log.i("ADD_EVENT", "User chose to skip spreadsheet creation.")
-//                                        }
-//                                    )
 
                                     if (isExactAlarmPermissionGranted(context)) {
                                         scheduleNotification(context, eventName, "Reminder for $eventName", reminderTimeMillis)
                                         scheduleNotification(context, eventName, "Event starts now", dateTimeMillis)
                                     }
-
                                     if (reminderId != null) {
-                                        showToast(context, "Event and reminder added successfully")
+                                        Toast.makeText(context, "Event and reminder added successfully",Toast.LENGTH_SHORT).show()
                                     }
 
                                     navController.popBackStack()
@@ -384,28 +363,28 @@ fun AddEvent(
 
 
 
-fun createAndStoreSpreadSheet(context: Context,viewModel: AddEventViewModel,event:Event){
-    val credential = GoogleAccountCredential.usingOAuth2(
-        context,
-        listOf(
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive.file"
-        )
-    ).apply {
-        selectedAccount = GoogleSignIn.getLastSignedInAccount(context)?.account
-    }
-
-    val spreadsheetId = SpreadSheet.createSpreadsheet(
-        context = context,
-        credential = credential,
-        sheetTitle = event.name,
-        tabTitles = listOf("Attendance", "Participants", "Meta")
-    )
-    Log.d("ADD EVENT ","SPreadsheet createed with id : $spreadsheetId")
-    if (!spreadsheetId.isNullOrEmpty()) {
-        viewModel.updateSpreadsheetId(event.id, spreadsheetId)
-    }
-}
+//fun createAndStoreSpreadSheet(context: Context,viewModel: AddEventViewModel,event:Event){
+//    val credential = GoogleAccountCredential.usingOAuth2(
+//        context,
+//        listOf(
+//            "https://www.googleapis.com/auth/spreadsheets",
+//            "https://www.googleapis.com/auth/drive.file"
+//        )
+//    ).apply {
+//        selectedAccount = GoogleSignIn.getLastSignedInAccount(context)?.account
+//    }
+//
+//    val spreadsheetId = SpreadSheet.createSpreadsheet(
+//        context = context,
+//        credential = credential,
+//        sheetTitle = event.name,
+//        tabTitles = listOf("Attendance", "Participants", "Meta")
+//    )
+//    Log.d("ADD EVENT ","SPreadsheet createed with id : $spreadsheetId")
+//    if (!spreadsheetId.isNullOrEmpty()) {
+//        viewModel.updateSpreadsheetId(event.id, spreadsheetId)
+//    }
+//}
 
 
 

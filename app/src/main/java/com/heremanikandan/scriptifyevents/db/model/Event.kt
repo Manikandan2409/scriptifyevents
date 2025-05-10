@@ -11,12 +11,12 @@ data class Event(
     val createdBy :String,
     val dateTimeMillis: Long,
     val reminder: Boolean,
-    val isCompleted: Boolean,
-    val isOngoing: Boolean,
-    val isWaiting: Boolean,
-    val disabled: Boolean,
-    val participants :Long,
-    val unknown: Long,
-    val spreadSheetId: String
+    val status: EventStatus,
 )
 
+enum class EventStatus {
+    ONGOING,
+    COMPLETED,
+    WAITING,
+    DISABLED
+}

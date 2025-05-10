@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.model.Event
+import com.heremanikandan.scriptifyevents.db.model.EventStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -43,10 +44,10 @@ class HomeViewModel(private val eventDao: EventDao) : ViewModel() {
         // ✅ **Apply event status filter**
         filteredList = when (filterType) {
 
-            FilterType.COMPLETED -> filteredList.filter { it.isCompleted }
-            FilterType.ONGOING -> filteredList.filter { it.isOngoing }
-            FilterType.WAITING -> filteredList.filter { it.isWaiting }
-            FilterType.DISABLED -> filteredList.filter { it.disabled }
+            FilterType.COMPLETED -> filteredList.filter { it.status == EventStatus.COMPLETED }
+            FilterType.ONGOING -> filteredList.filter { it.status == EventStatus.ONGOING }
+            FilterType.WAITING -> filteredList.filter { it.status == EventStatus.WAITING}
+            FilterType.DISABLED -> filteredList.filter { it.status == EventStatus.DISABLED }
             FilterType.ALL -> filteredList
         }
 

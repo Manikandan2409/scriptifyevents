@@ -1,5 +1,6 @@
 package com.heremanikandan.scriptifyevents.drawer.event
 
+import android.widget.Toast
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -16,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,9 +26,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.repos.AttendanceRepository
 import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.AttendeesScreen
@@ -40,7 +45,7 @@ sealed class EventTab(val route: String, val icon: ImageVector, val label: Strin
 }
 @ExperimentalAnimationApi
 @Composable
-fun EventScreen(eventId: String) {
+fun EventScreen(eventId: String,navController: NavController) {
     var selectedTab by remember { mutableStateOf<EventTab>(EventTab.Overview) }
     val context = LocalContext.current
     var db  = ScriptyManager.getInstance(context)
@@ -55,25 +60,21 @@ fun EventScreen(eventId: String) {
         val event = eventDao.getEventById(id)
         eventName = event!!.name
     }
+    val editable = {
+        Toast.makeText(context,"Editable clicked",Toast.LENGTH_SHORT).show()
+    navController.navigate(Screen.AddEvent.passEventId(id))
+    }
 //    val participants = d
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Show the current screen based on selected tab
-//        Column(modifier = Modifier.weight(1f)) { // Pushes content to fill available space
-//            when (selectedTab) {
-//                is EventTab.Overview -> OverviewScreen(eventId, eventDao, sharedWithDao)
-//                is EventTab.Attendees -> AttendeesScreen(id,eventName, attendanceRepository,participantDao)
-//                is EventTab.Participants -> ParticipantsScreen(id, participantDao)
-//            }
-//        }
         Crossfade(
             targetState = selectedTab,
             animationSpec = tween(durationMillis = 100, easing = FastOutSlowInEasing),
             modifier = Modifier.weight(1f)
         ) { tab ->
             when (tab) {
-                is EventTab.Overview -> OverviewScreen(id, eventDao, participantDao,attendeesDao,sharedWithDao)
+                is EventTab.Overview -> OverviewScreen(id, eventDao, participantDao,attendeesDao,sharedWithDao,editable)
                 is EventTab.Attendees -> AttendeesScreen(
                     id,
                     eventName,
@@ -101,10 +102,17 @@ fun EventScreen(eventId: String) {
                             imageVector = tab.icon,
                             contentDescription = tab.label,
                             modifier = Modifier.size(if (selectedTab == tab) 32.dp else 24.dp), // Enlarging selected icon
-                            tint = if (selectedTab == tab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onTertiary,
+                            tint = if (selectedTab == tab) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onTertiary,
 
                         )
                     },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedTextColor = MaterialTheme.colorScheme.onTertiary,
+                        indicatorColor = Color.Transparent // No background highlight
+                    ),
                     label = { Text(tab.label) }
                 )
             }

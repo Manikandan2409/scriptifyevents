@@ -47,17 +47,16 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState, co
             coroutineScope.launch { drawerState.close() }
         }
         DrawerMenuItem(title = Screen.Logout.route, icon =Icons.Default.ExitToApp ) {
-            performLogout(navController,context,coroutineScope,drawerState)
+            performLogout(context,coroutineScope,drawerState)
         }
 
     }
 }
 
 // Function to handle logout logic
-fun performLogout(navController: NavHostController,context: Context, coroutineScope: CoroutineScope,
+fun performLogout(context: Context, coroutineScope: CoroutineScope,
                   drawerState: DrawerState) {
-    // Clear user session or token if necessary
-    // Example: viewModel.logout()
+
     val manager = SharedPrefManager(context)
     manager.signOut()
     val authManager = AuthManager(context)
