@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.heremanikandan.scriptifyevents.db.dto.DepartmentCount
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import kotlinx.coroutines.flow.Flow
 
@@ -41,6 +42,10 @@ interface ParticipantDao {
     @Query("DELETE FROM participants")
     suspend fun deleteAllParticipants()
 
+    @Query("SELECT COUNT(id) FROM participants WHERE eventId= :eventId")
+    suspend fun getParticipantsCountByEventId(eventId: Long): Long
 
+    @Query("SELECT course, COUNT(id) as count FROM participants WHERE eventId = :eventId GROUP BY course")
+    fun getDepartmentWiseParticipantCount(eventId: Long): Flow<List<DepartmentCount>>
 
 }

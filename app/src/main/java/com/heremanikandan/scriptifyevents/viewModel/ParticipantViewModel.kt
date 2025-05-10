@@ -66,6 +66,11 @@ private fun loadParticipants() {
         // Apply sorting only if the user clicks a sort option
         isSorted = true
         filteredParticipants.value = when (option) {
+            "id" -> {
+                if (ascending)
+                    _participants.value.sortedBy { it.id }
+                else _participants.value.sortedByDescending { it.name }
+            }
             "Name" -> {
                 if (ascending) _participants.value.sortedBy { it.name }
                 else _participants.value.sortedByDescending { it.name }

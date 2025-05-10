@@ -39,10 +39,6 @@ fun ParticipantSearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boo
     var sortOption by remember { mutableStateOf("Id") }
     var isAscending by remember { mutableStateOf(true) }
     val sortingOptions = listOf("Id","Name","Roll No")
-    var showSortMenu by remember { mutableStateOf(false) }
-    val selectedSortOption by remember {
-        mutableStateOf("Id")
-    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,7 +90,7 @@ fun ParticipantSearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boo
              ) {
                 Text(text = it)
             }
-           Log.d("ATTENDEES","CREAtion of $it completed")
+           Log.d("Participants","CREAtion of $it completed")
        }
 
         Spacer(modifier = Modifier.width(16.dp))

@@ -1,5 +1,6 @@
 package com.heremanikandan.scriptifyevents.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +28,10 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -71,6 +74,9 @@ fun AttendeesList(attendanceList: List<AttendanceDTO>, searchQuery: String) {
     }
 }
 
+/**
+ * Attendance unit
+ */
 @Composable
 fun AttendanceItem(attendance: AttendanceDTO) {
     Card(
@@ -92,8 +98,11 @@ fun AttendanceItem(attendance: AttendanceDTO) {
     }
 }
 
+/**
+  Attendance Manage buttons
+ */
 @Composable
-fun FloatingActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, onExportClick:  () -> Unit) {
+fun AttendanceManageActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, onExportClick:  () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -130,7 +139,6 @@ fun FloatingActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, onExport
                     Icon(Icons.Default.Add, contentDescription = "Add ")
                 }
             }
-
             FloatingActionButton(onClick = { expanded=!expanded} ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Attendance")
             }
@@ -141,6 +149,10 @@ fun FloatingActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, onExport
         }
     }
 }
+
+/**
+ *  Manual attendance Dialog
+ **/
 
 @Composable
 fun AddAttendanceDialog(onDismiss: () -> Unit, onAddAttendance: (String) -> Unit) {
@@ -162,6 +174,7 @@ fun AddAttendanceDialog(onDismiss: () -> Unit, onAddAttendance: (String) -> Unit
         confirmButton = {
             TextButton(onClick = {
                 if (rollNo.value.isNotEmpty()) {
+
                     onAddAttendance(rollNo.value)
                 } else {
                     Toast.makeText(context, "Roll No is required!", Toast.LENGTH_SHORT).show()
@@ -180,13 +193,15 @@ fun AddAttendanceDialog(onDismiss: () -> Unit, onAddAttendance: (String) -> Unit
 
 
 
-// Attendance Search bar
+/**
+ *  Attendance Search bar
+**/
 @Composable
 fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boolean, onLayoutToggle: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var sortOption by remember { mutableStateOf("Name") }
+    var sortOption by remember { mutableStateOf("Id") }
     var isAscending by remember { mutableStateOf(true) }
-
+    val sortingOptions = listOf("Id","Name","Roll No")
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -222,19 +237,37 @@ fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boole
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(8.dp))
-        DropdownMenuComponent(
-            options = listOf("Name", "Roll No"),
-            selectedOption = sortOption
-        ) {
-            sortOption = it
-            viewModel.sortAttendance(it, isAscending)
+
+        sortingOptions.forEach {
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = {
+                    sortOption = it
+                    viewModel.sortAttendance(sortOption,isAscending)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                    containerColor = if (sortOption ==it)  MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text(text = it)
+            }
+            Log.d("ATTENDEES","CREAtion of $it completed")
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Button(onClick = {
-            isAscending = !isAscending
-            viewModel.sortAttendance(sortOption, isAscending)
-        }) {
-            Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.onTertiary)
+
+        Box {
+            Button(onClick = { isAscending=!isAscending
+                viewModel.sortAttendance(sortOption,isAscending)}) {
+                Icon(
+                    imageVector = Icons.Default.Sort,
+                    contentDescription = "Sort",
+                    tint = MaterialTheme.colorScheme.onTertiary
+                )
+                Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.primaryContainer)
+
+            }
+
         }
     }
 }

@@ -35,9 +35,6 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
             }
         }
     }
-
-
-
     fun updateSearchQuery(query: String) {
         filteredAttendence.value = if (query.isEmpty()) {
             _attendance.value
@@ -47,8 +44,6 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
             }
         }
     }
-
-
     /* Sort
     */
 
@@ -58,7 +53,7 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
         // Apply sorting only if the user clicks a sort option
         isSorted = true
         filteredAttendence.value = when (option) {
-            "id" ->{
+            "Id" ->{
                 if (ascending) _attendance.value.sortedBy { it.attendanceId }
                 else _attendance.value.sortedByDescending { it.attendanceId }
             }
@@ -77,16 +72,16 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
     }
 
 
-
-
-    suspend fun getParticipantID(rollNo: String): Long {
+    suspend fun getParticipantID(rollNo: String): Long? {
         val participant = participantDao.getParticipantByRollNO(rollNo, eventId)
         return if (participant != null) {
             Log.d(TAG,"ID: ${participant.id} name: ${participant.name} ")
 
             participant.id
         } else {
-                createParticipant(rollNo)
+
+            //    createParticipant(rollNo)
+            return null;
         }
     }
 
@@ -105,16 +100,11 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
 
     }
 
-
-
-
     fun deleteAttendance(attendance: Attendance) {
         viewModelScope.launch {
             repository.deleteAttendance(attendance)
         }
     }
-
-
 
     fun getAttendanceByEventAndUser(eventId: Long, userId: Long) {
         viewModelScope.launch {

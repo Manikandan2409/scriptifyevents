@@ -42,9 +42,6 @@ class AuthManager(private val context: Context) {
         const val REQUEST_AUTHORIZE = 1001
     }
 
-
-
-
     suspend fun signInWithGoogle(
         context: Context,
         activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
@@ -109,49 +106,6 @@ class AuthManager(private val context: Context) {
         }
     }
 
-
-
-
-//    fun requestAdditionalPermissions(
-//        context: Context,
-//        activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
-//    ) {
-//        val requestedScopes = listOf(
-//            Scope(DriveScopes.DRIVE_FILE),
-//            Scope(GmailScopes.GMAIL_READONLY),
-//            Scope(GmailScopes.GMAIL_COMPOSE),
-//            Scope(CalendarScopes.CALENDAR),
-//            Scope(SheetsScopes.SPREADSHEETS),
-//            Scope(SlidesScopes.PRESENTATIONS)
-//        )
-//
-//        val authorizationRequest = AuthorizationRequest.builder()
-//            .setRequestedScopes(requestedScopes)
-//            .build()
-//
-//        Identity.getAuthorizationClient(context)
-//            .authorize(authorizationRequest)
-//            .addOnSuccessListener { authorizationResult ->
-//                if (authorizationResult.hasResolution()) {
-//                    val pendingIntent = authorizationResult.getPendingIntent()
-//                    Log.d("Auth", "Requesting user approval")
-//                    try {
-//                        val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent!!).build()
-//                        activityResultLauncher.launch(intentSenderRequest) // ✅ Use registered launcher
-//                    } catch (e: IntentSender.SendIntentException) {
-//                        Log.e("Authorization", "Couldn't start Authorization UI: ${e.localizedMessage}")
-//                    }
-//                } else {
-//                    Log.d("Auth", "Saving the permissions")
-//                    saveUserPermissionsLocally()
-//                }
-//            }
-//            .addOnFailureListener { e ->
-//                Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
-//            }
-//    }
-
-
     fun requestAdditionalPermissionsIfNeeded(
         context: Context,
         activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
@@ -204,7 +158,6 @@ class AuthManager(private val context: Context) {
                 Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
             }
     }
-
 
     /**
      * Store granted permissions in Firebase

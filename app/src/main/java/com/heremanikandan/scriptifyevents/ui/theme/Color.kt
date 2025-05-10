@@ -16,7 +16,7 @@ val mildRed = Color(0xFF522e2b)
 
 val Green60=Color(0xFF7AC460)
 
-val Yellow60 =Color(0xFFFFC059)
+val Yellow60 =Color(0xFFB3742E)
 val Yellow20 = Color(0xFFf2d37e)
 
 // 🌙 Dark Theme Colors

@@ -73,7 +73,7 @@ fun EventScreen(eventId: String) {
             modifier = Modifier.weight(1f)
         ) { tab ->
             when (tab) {
-                is EventTab.Overview -> OverviewScreen(eventId, eventDao, sharedWithDao)
+                is EventTab.Overview -> OverviewScreen(id, eventDao, participantDao,attendeesDao,sharedWithDao)
                 is EventTab.Attendees -> AttendeesScreen(
                     id,
                     eventName,

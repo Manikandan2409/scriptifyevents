@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material3.Card
@@ -33,26 +35,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heremanikandan.scriptifyevents.R
+import com.heremanikandan.scriptifyevents.components.AnimatedCountRow
+import com.heremanikandan.scriptifyevents.db.dao.AttendanceDao
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
+import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.dao.SharedWithDao
 import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
 import com.heremanikandan.scriptifyevents.viewModel.OverviewViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.OverviewViewModelFactory
 
 @Composable
-fun OverviewScreen(eventId: String,
+fun OverviewScreen(eventId: Long,
                    eventDao :EventDao,
+                   participantDao: ParticipantDao,
+                   attendanceDao: AttendanceDao,
                    sharedWithDao: SharedWithDao,
                    viewModel: OverviewViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                       factory = OverviewViewModelFactory(eventId, eventDao, sharedWithDao)
+                       factory = OverviewViewModelFactory(eventId, eventDao,participantDao,attendanceDao, sharedWithDao)
                    )
 ) {
     val eventDetails by viewModel.eventDetails.collectAsState()
+    val totalParticipants by viewModel.totalParticipants.collectAsState()
+    val totalattendees by viewModel.totalAttendes.collectAsState()
+    val totalDepartments by viewModel.totalDepartment.collectAsState()
+
     //val sharedWithList by viewModel.sharedWithList.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.onPrimary) // Light yellow background
+            .verticalScroll(rememberScrollState())
     ) {
 
         Box(
@@ -69,7 +81,7 @@ fun OverviewScreen(eventId: String,
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = Modifier
                         .size(160.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -99,7 +111,6 @@ fun OverviewScreen(eventId: String,
                     Row(
                         modifier = Modifier
                             .padding(18.dp)
-
                             ,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -129,6 +140,22 @@ fun OverviewScreen(eventId: String,
                         EventDetailRow("Time :", time, true)
                     }
                 }
+
+
+        // counts
+
+
+        Text(
+            text = "More",
+            modifier = Modifier
+                .padding(top = 8.dp, bottom = 8.dp)
+                .align(Alignment.CenterHorizontally),
+            color =  MaterialTheme.colorScheme.primaryContainer)
+            AnimatedCountRow(
+            participantCount = totalParticipants,
+            attendanceCount = totalattendees,
+            departmentCount = totalDepartments
+        )
 
         // Shared Section
         Text(

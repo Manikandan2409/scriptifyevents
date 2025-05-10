@@ -38,7 +38,7 @@ import com.heremanikandan.scriptifyevents.components.AddAttendanceDialog
 import com.heremanikandan.scriptifyevents.components.AttendanceSearchAndSortBar
 import com.heremanikandan.scriptifyevents.components.AttendeesGrid
 import com.heremanikandan.scriptifyevents.components.AttendeesList
-import com.heremanikandan.scriptifyevents.components.FloatingActionButtons
+import com.heremanikandan.scriptifyevents.components.AttendanceManageActionButtons
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.model.Attendance
 import com.heremanikandan.scriptifyevents.db.model.AttendanceMode
@@ -56,9 +56,7 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
         factory = AttendanceViewModelFactory(attendanceRepository,eventId,participantDao)
 
     )
-
     val context = LocalContext.current
-
     var isGridView by remember { mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
@@ -70,9 +68,7 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
     }
     var scannedText by remember { mutableStateOf("Not scanned yet") }
 
-    suspend fun addAttendance(rollNo:String ){
-        val pid = viewModel.getParticipantID(rollNo) // suspend call
-
+    suspend fun addAttendance(pid:Long ){
         val newAttendance = Attendance(
             eventId = eventId,
             userId = sharedPrefManager.getUserUid()!!.toString(),
@@ -82,7 +78,6 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
         )
         Log.d("INSERT ATTENDANCE","new Attendance $newAttendance")
         viewModel.insertAttendance(newAttendance)
-        Toast.makeText(context, "$rollNo Attendance Added!", Toast.LENGTH_SHORT).show()
     }
 
     fun callQRScanner(
@@ -99,7 +94,6 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
 
     var showRetryDialog by remember { mutableStateOf(false) }
 
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
@@ -111,11 +105,12 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
 
                 coroutineScope.launch {
                     val pid = viewModel.getParticipantID(scannedText)
+
                     if (pid == null) {
                         showRetryDialog = true // Ask user
                         return@launch
                     }
-                    addAttendance(scannedText)
+                    addAttendance(pid)
                 }
             } else {
                 Toast.makeText(context, "Cannot read attendance", Toast.LENGTH_SHORT).show()
@@ -192,7 +187,7 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
         ) {
 
           //   Floating Action Buttons
-            FloatingActionButtons(
+            AttendanceManageActionButtons(
                 onAddClick = { showDialog = true },
                 onQRClick =  {
 //                    val integrator = IntentIntegrator(context as Activity)
@@ -216,19 +211,16 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
                 onDismiss = { showDialog = false },
                 onAddAttendance = { rollNo ->
                     coroutineScope.launch {
-//                        val pid = viewModel.getParticipantID(rollNo) // suspend call
-//
-//                        val newAttendance = Attendance(
-//                            eventId = eventId,
-//                            userId = sharedPrefManager.getUserUid()!!.toString(),
-//                            participantId = pid, // use `pid`, not rollNo.toLong()
-//                            attendantAtInMillis = System.currentTimeMillis(),
-//                            attendanceMadeBy = AttendanceMode.ENTERED
-//                        )
-//                        Log.d("INSERT ATTENDANCE","new Attendance $newAttendance")
-//                        viewModel.insertAttendance(newAttendance)
-                        addAttendance(rollNo)
-                        showDialog = false
+                        val pid = viewModel.getParticipantID(rollNo)
+                        if (pid!= null){
+                            addAttendance(pid)
+                            showDialog = false
+                            Toast.makeText(context, "$rollNo Attendance Added!", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }else{
+                            Toast.makeText(context, "$rollNo NO Valid User", Toast.LENGTH_SHORT).show()
+
+                        }
                     }
                 }
             )

@@ -17,28 +17,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,11 +58,9 @@ import com.heremanikandan.scriptifyevents.viewModel.HomeViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.HomeViewModelFactory
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val localEvents = ScriptyManager.getInstance(context).EventDao()
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(localEvents))
@@ -98,13 +94,12 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(22),
                     singleLine = true,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                        cursorColor = MaterialTheme.colorScheme.onTertiary,
                         focusedBorderColor = MaterialTheme.colorScheme.onTertiary,     // Border color when focused
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline,   // Border color when not focused
                         focusedLabelColor = MaterialTheme.colorScheme.primaryContainer,
-                        cursorColor = MaterialTheme.colorScheme.onTertiary,
-                        focusedTextColor = MaterialTheme.colorScheme.onTertiary,
-
                     )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -114,7 +109,7 @@ fun HomeScreen(navController: NavController) {
                     Button(onClick = { showSortMenu = true }) {
 //                        Text("Sort")
                         Icon(
-                            imageVector = Icons.Default.Sort,
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
                             contentDescription = "Sort",
                             tint = MaterialTheme.colorScheme.onTertiary
                         )
@@ -198,14 +193,14 @@ fun HomeScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(32.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddEvent.route) },
-                modifier = Modifier.size(72.dp)
+                modifier = Modifier.size(64.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(Icons.Filled.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
             }
         }
 
