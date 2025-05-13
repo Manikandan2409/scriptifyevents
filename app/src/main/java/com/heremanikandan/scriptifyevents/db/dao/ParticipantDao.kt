@@ -23,7 +23,7 @@ interface ParticipantDao {
     // Get all participants for a specific event
     @Query("SELECT * FROM participants WHERE eventId = :eventId")
     fun getParticipantsByEventId(eventId: Long): Flow<List<Participant>>
-    @Query("SELECT * FROM participants WHERE rollNo = :rollNo AND eventId= :eventId LIMIT 1")
+    @Query("SELECT * FROM participants WHERE LOWER(rollNo) = LOWER(:rollNo) AND eventId= :eventId LIMIT 1")
     suspend fun getParticipantByRollNO(rollNo:String,eventId: Long): Participant?
 
     // Get participant by ID

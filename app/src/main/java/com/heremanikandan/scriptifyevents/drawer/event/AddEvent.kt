@@ -235,11 +235,10 @@ fun AddEvent(
                         }
                     } else {
                         Toast.makeText(context, "Failed to add event.", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
                     }
                 }
             }
-
-                // navController.popBackStack()
         }
     }
 
@@ -359,33 +358,3 @@ fun AddEvent(
         }
     }
 }
-
-
-
-
-//fun createAndStoreSpreadSheet(context: Context,viewModel: AddEventViewModel,event:Event){
-//    val credential = GoogleAccountCredential.usingOAuth2(
-//        context,
-//        listOf(
-//            "https://www.googleapis.com/auth/spreadsheets",
-//            "https://www.googleapis.com/auth/drive.file"
-//        )
-//    ).apply {
-//        selectedAccount = GoogleSignIn.getLastSignedInAccount(context)?.account
-//    }
-//
-//    val spreadsheetId = SpreadSheet.createSpreadsheet(
-//        context = context,
-//        credential = credential,
-//        sheetTitle = event.name,
-//        tabTitles = listOf("Attendance", "Participants", "Meta")
-//    )
-//    Log.d("ADD EVENT ","SPreadsheet createed with id : $spreadsheetId")
-//    if (!spreadsheetId.isNullOrEmpty()) {
-//        viewModel.updateSpreadsheetId(event.id, spreadsheetId)
-//    }
-//}
-
-
-
-
