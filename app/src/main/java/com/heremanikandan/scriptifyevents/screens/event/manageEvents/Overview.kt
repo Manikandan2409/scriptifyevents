@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.event.manageEvents
+package com.heremanikandan.scriptifyevents.screens.event.manageEvents
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +44,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.components.AnimatedCountRow
+import com.heremanikandan.scriptifyevents.components.EventStatusDropdown
 import com.heremanikandan.scriptifyevents.db.dao.AttendanceDao
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.dao.SharedWithDao
+import com.heremanikandan.scriptifyevents.db.model.EventStatus
+import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
 import com.heremanikandan.scriptifyevents.viewModel.OverviewViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.OverviewViewModelFactory
@@ -62,10 +68,11 @@ fun OverviewScreen(eventId: Long,
 ) {
     val eventDetails by viewModel.eventDetails.collectAsState()
     val totalParticipants by viewModel.totalParticipants.collectAsState()
-    val totalattendees by viewModel.totalAttendes.collectAsState()
+    val totalattendees by viewModel.totalAttendees.collectAsState()
     val totalDepartments by viewModel.totalDepartment.collectAsState()
     val context = LocalContext.current
-    //val sharedWithList by viewModel.sharedWithList.collectAsState()
+    val sharedPrefManager = SharedPrefManager(context)
+    var selectedStatus by remember { mutableStateOf(eventDetails?.status?: EventStatus.WAITING) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,39 +81,120 @@ fun OverviewScreen(eventId: Long,
     ) {
 
 
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(24.dp),
+//            contentAlignment = Alignment.Center,
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Card(
+//                    shape = CircleShape,
+//                    elevation = CardDefaults.cardElevation(4.dp),
+//                    modifier = Modifier
+//                        .size(160.dp),
+//                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
+//                ) {
+//                    Box(
+//                        modifier = Modifier.fillMaxSize(),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Row(
+//                            modifier = Modifier
+//                                .padding(18.dp)
+//                                .fillMaxWidth()
+//                                .shadow(
+//                                    elevation = 8.dp,
+//                                    shape = CircleShape,
+//                                    ambientColor = MaterialTheme.colorScheme.onSecondary,
+//                                    spotColor = MaterialTheme.colorScheme.onSecondary
+//                                ),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                                Image(
+//                                    painter = painterResource(id = R.drawable.logo),
+//                                    contentDescription = "Event Image",
+//                                    modifier = Modifier
+//                                    .size(160.dp)
+//                                    .clip(CircleShape),
+//                                    contentScale = ContentScale.Crop
+//                                )
+//                            }
+//
+//                        Column(
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .zIndex(1f) // bring to front
+//                        ) {
+//                            selectedStatus?.let {
+//                            Log.d("Overview","SELECTED STATUS")
+//
+//                                EventStatusDropdown(
+//                                selectedStatus = it,
+//                                onStatusSelected = { selectedStatus = it }
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                Log.d("Overview","Info")
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                    Row(
+//                        modifier = Modifier
+//                            .padding(18.dp)
+//                        .clickable {
+//                            editable()
+//                        }
+//                            ,
+//                        verticalAlignment = Alignment.CenterVertically
+//
+//                    ) {
+//
+//                        eventDetails?.let { event ->
+//
+//                            Text(
+//                                text = event.name,
+//                                fontSize = 32.sp,
+//                                fontWeight = FontWeight.SemiBold,
+//                                color = MaterialTheme.colorScheme.primaryContainer,
+//                                modifier = Modifier.padding(top = 8.dp)
+//                            )
+//                        }
+//                        Icon(
+//                            imageVector = Icons.Default.Edit,
+//                            contentDescription = "Edit",
+//                            tint = MaterialTheme.colorScheme.onTertiary,
+//
+//                        )
+//
+//                    }
+//
+//            }
+//        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                // Circle image card
                 Card(
                     shape = CircleShape,
                     elevation = CardDefaults.cardElevation(4.dp),
-                    modifier = Modifier
-                        .size(160.dp),
+                    modifier = Modifier.size(160.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(18.dp)
-                                .fillMaxWidth()
-                                .shadow(
-                                    elevation = 8.dp,
-                                    shape = CircleShape,
-                                    ambientColor = MaterialTheme.colorScheme.onSecondary,
-                                    spotColor = MaterialTheme.colorScheme.onSecondary
-                                ),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
                         Image(
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Event Image",
@@ -115,39 +203,46 @@ fun OverviewScreen(eventId: Long,
                                 .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
-                            }
                     }
                 }
 
+
+
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier
-                            .padding(18.dp)
-                        .clickable {
-                            editable()
-                        }
-                            ,
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        eventDetails?.let { event ->
-                            Text(
-                                text = event.name,
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.onTertiary,
-
+                // Event name row
+                Row(
+                    modifier = Modifier
+                        .padding(18.dp)
+                        .clickable { editable() },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    eventDetails?.let { event ->
+                        Text(
+                            text = event.name,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
 
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onTertiary,
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ✅ Status Dropdown (outside the Circle!)
+                EventStatusDropdown(
+                    selectedStatus = selectedStatus,
+                    onStatusSelected = { selectedStatus = it
+                        viewModel.setEventStatus(it)
+                    }
+                )
             }
         }
 
@@ -158,7 +253,7 @@ fun OverviewScreen(eventId: Long,
                         Spacer(modifier = Modifier.height(8.dp))
                         val (date, time) = convertMillisToDateTime(event.dateTimeMillis)
                         EventDetailRow("Created at :", "24-dec-2024", false)
-                        EventDetailRow("Created By :", event.createdBy, false)
+                        EventDetailRow("Created By :", sharedPrefManager.getUserName()!!, false)
                         EventDetailRow("Date :", date, true)
                         EventDetailRow("Time :", time, true)
                     }

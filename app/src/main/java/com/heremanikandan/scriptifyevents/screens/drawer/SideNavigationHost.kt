@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer
+package com.heremanikandan.scriptifyevents.screens.drawer
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
@@ -11,11 +11,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.heremanikandan.scriptifyevents.Screen
-import com.heremanikandan.scriptifyevents.drawer.event.AddEvent
-import com.heremanikandan.scriptifyevents.drawer.event.EventScreen
-import com.heremanikandan.scriptifyevents.drawer.menu.HomeScreen
-import com.heremanikandan.scriptifyevents.drawer.menu.ProfileScreen
-import com.heremanikandan.scriptifyevents.drawer.menu.SettingsScreen
+import com.heremanikandan.scriptifyevents.screens.event.AddEvent
+import com.heremanikandan.scriptifyevents.screens.event.EventScreen
+import com.heremanikandan.scriptifyevents.screens.menu.HomeScreen
+import com.heremanikandan.scriptifyevents.screens.menu.ProfileScreen
+import com.heremanikandan.scriptifyevents.screens.menu.SettingsScreen
 import com.heremanikandan.scriptifyevents.screens.WelcomeScreen
 
 

@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.menu
+package com.heremanikandan.scriptifyevents.screens.menu
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

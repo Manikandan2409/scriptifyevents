@@ -32,7 +32,7 @@ val light = Color(0xFFFFFFFF) // Fix: Added `FF` to ensure white
 val light_light = Color(0xFFF1F1F1)
 val light_placeholder = Color(0xFF696666)
 val light_components = Color(0xFFF1F1F1)
-val light_topBarComponent = Color(0xFF)
+//val light_topBarComponent = Color(0xFF)
 
 
 

@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.event
+package com.heremanikandan.scriptifyevents.screens.event
 
 import android.app.Activity
 import android.os.Handler
@@ -202,7 +202,7 @@ fun AddEvent(
                 dateTimeMillis = dateTimeMillis,
                 status = EventStatus.WAITING,
                 reminder = isReminderEnabled,
-                createdBy = sharedPrefManager.getUserName()!!,
+                createdBy = sharedPrefManager.getUserUid()!!,
             )
 
             viewModel.insertEvent(newEvent) { isSuccess ->

@@ -2,10 +2,15 @@ package com.heremanikandan.scriptifyevents.db.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "participants",
+    indices = [
+        Index(value = ["eventId"]),            // for WHERE eventId = ?
+        Index(value = ["eventId", "course"]) // for GROUP BY queries
+    ],
     foreignKeys = [
         ForeignKey(
             entity = Event::class,

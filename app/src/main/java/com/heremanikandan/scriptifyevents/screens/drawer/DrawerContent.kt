@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer
+package com.heremanikandan.scriptifyevents.screens.drawer
 
 import android.content.Context
 import android.content.Intent
@@ -19,7 +19,7 @@ import androidx.navigation.NavHostController
 import com.heremanikandan.scriptifyevents.MainActivity
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.auth.AuthManager
-import com.heremanikandan.scriptifyevents.drawer.menu.ProfileHeader
+import com.heremanikandan.scriptifyevents.screens.menu.ProfileHeader
 import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

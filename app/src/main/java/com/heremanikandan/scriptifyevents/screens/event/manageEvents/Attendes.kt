@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.event.manageEvents
+package com.heremanikandan.scriptifyevents.screens.event.manageEvents
 
 import android.app.Activity
 import android.content.Context

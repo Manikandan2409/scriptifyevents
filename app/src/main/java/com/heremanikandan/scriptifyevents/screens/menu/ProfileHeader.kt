@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.menu
+package com.heremanikandan.scriptifyevents.screens.menu
 
 import android.net.Uri
 import android.util.Log

@@ -2,55 +2,124 @@ package com.heremanikandan.scriptifyevents.utils.files
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import com.heremanikandan.scriptifyevents.db.dto.AttendanceDTO
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.WorkbookFactory
 
 object Excel {
-    fun readParticipantsFromExcel(context: Context, uri: Uri, eventId: Long): List<Participant>? {
+//    fun readParticipantsFromExcel(context: Context, uri: Uri, eventId: Long): List<Participant>? {
+//        val participants = mutableListOf<Participant>()
+//
+//        try {
+//            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+//                val workbook = WorkbookFactory.create(inputStream)
+//                val sheet = workbook.getSheetAt(0)
+//
+//                val headerRow = sheet.getRow(0)
+//                if (headerRow == null ||
+//                    headerRow.getCell(0)?.stringCellValue != "Reg No" ||
+//                    headerRow.getCell(1)?.stringCellValue != "Name" ||
+//                    headerRow.getCell(2)?.stringCellValue != "Email" ||
+//                    headerRow.getCell(3)?.stringCellValue!="Course"
+//                ) {
+//                    Toast.makeText(context, "Header row mismatch.", Toast.LENGTH_LONG).show()
+//                    return null
+//                }
+//
+//                val namePattern = Regex("^[a-zA-Z .]*$")
+//                val emailPattern = Regex("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$")
+//
+//                for (rowIndex in 1..sheet.lastRowNum) {
+//                    val row = sheet.getRow(rowIndex) ?: continue
+//                    val rollNo = row.getCell(0)?.stringCellValue?.trim() ?: continue
+//                    val name = row.getCell(1)?.stringCellValue?.trim() ?: continue
+//                    val email = row.getCell(2)?.stringCellValue?.trim() ?: continue
+//                    val course = row.getCell(3)?.stringCellValue?.trim()?:continue
+//
+//                    if (namePattern.matches(name) && emailPattern.matches(email)) {
+//                        participants.add(Participant(rollNo = rollNo, name = name, email = email, eventId = eventId, course = course))
+//                        //  Toast.makeText(context,rollNo,Toast.LENGTH_LONG).show()
+//                    }
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            Toast.makeText(context, "Error reading Excel file", Toast.LENGTH_LONG).show()
+//        }
+//
+//        return participants
+//    }
+
+
+    suspend fun readParticipantsFromExcel(
+        context: Context,
+        uri: Uri,
+        eventId: Long
+    ): Result<List<Participant>> = withContext(Dispatchers.IO) {
+
         val participants = mutableListOf<Participant>()
 
-        try {
+        return@withContext try {
+            Log.d("EXCEL PARSER"," uri ${uri.path} ${uri.host}")
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val workbook = WorkbookFactory.create(inputStream)
                 val sheet = workbook.getSheetAt(0)
 
                 val headerRow = sheet.getRow(0)
                 if (headerRow == null ||
-                    headerRow.getCell(0)?.stringCellValue != "Reg No" ||
-                    headerRow.getCell(1)?.stringCellValue != "Name" ||
-                    headerRow.getCell(2)?.stringCellValue != "Email" ||
-                    headerRow.getCell(3)?.stringCellValue!="Course"
+                    headerRow.getCell(0)?.stringCellValue?.trim() != "Reg No" ||
+                    headerRow.getCell(1)?.stringCellValue?.trim() != "Name" ||
+                    headerRow.getCell(2)?.stringCellValue?.trim() != "Email" ||
+                    headerRow.getCell(3)?.stringCellValue?.trim() != "Course"
                 ) {
-                    Toast.makeText(context, "Header row mismatch.", Toast.LENGTH_LONG).show()
-                    return null
+                    return@withContext Result.failure(IllegalArgumentException("Header row mismatch"))
                 }
 
                 val namePattern = Regex("^[a-zA-Z .]*$")
                 val emailPattern = Regex("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$")
 
                 for (rowIndex in 1..sheet.lastRowNum) {
-                    val row = sheet.getRow(rowIndex) ?: continue
-                    val rollNo = row.getCell(0)?.stringCellValue?.trim() ?: continue
-                    val name = row.getCell(1)?.stringCellValue?.trim() ?: continue
-                    val email = row.getCell(2)?.stringCellValue?.trim() ?: continue
-                    val course = row.getCell(3)?.stringCellValue?.trim()?:continue
+                    try {
+                        val row = sheet.getRow(rowIndex) ?: continue
+                        val rollNo = row.getCell(0)?.stringCellValue?.trim() ?: continue
+                        val name = row.getCell(1)?.stringCellValue?.trim() ?: continue
+                        val email = row.getCell(2)?.stringCellValue?.trim() ?: continue
+                        val course = row.getCell(3)?.stringCellValue?.trim() ?: continue
 
-                    if (namePattern.matches(name) && emailPattern.matches(email)) {
-                        participants.add(Participant(rollNo = rollNo, name = name, email = email, eventId = eventId, course = course))
-                        //  Toast.makeText(context,rollNo,Toast.LENGTH_LONG).show()
+                        if (namePattern.matches(name) && emailPattern.matches(email)) {
+                            participants.add(
+                                Participant(
+                                    rollNo = rollNo,
+                                    name = name,
+                                    email = email,
+                                    eventId = eventId,
+                                    course = course
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Log.w("ExcelParser", "Skipping malformed row at index $rowIndex: ${e.message}")
                     }
                 }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(context, "Error reading Excel file", Toast.LENGTH_LONG).show()
-        }
 
-        return participants
+                workbook.close()
+            }
+
+            Result.success(participants)
+
+        } catch (e: Exception) {
+            Log.e("ExcelParser", "Failed to read Excel file", e)
+            Result.failure(e)
+        }
     }
+
+
+
 
 
 //    fun exportToExcel(context: android.content.Context,eventName:String,uri:Uri, attendanceList: List<AttendanceDTO>) {

@@ -20,6 +20,9 @@ interface EventDao {
     @Query("SELECT * FROM event WHERE id = :id")
     suspend fun getEventById(id: Long):Event?
 
+    @Query("SELECT * FROM event WHERE createdBy =:createdBy ORDER BY id")
+    fun getAllEventsByUserId(createdBy:String): Flow<List<Event>>
+
     @Query("SELECT * FROM event")
     fun getAllEvents(): Flow<List<Event>>
 

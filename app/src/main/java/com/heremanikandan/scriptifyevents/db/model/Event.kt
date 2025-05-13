@@ -14,9 +14,4 @@ data class Event(
     val status: EventStatus,
 )
 
-enum class EventStatus {
-    ONGOING,
-    COMPLETED,
-    WAITING,
-    DISABLED
-}
+

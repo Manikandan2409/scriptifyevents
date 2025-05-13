@@ -1,5 +1,6 @@
 package com.heremanikandan.scriptifyevents.components
 
+import android.util.Log
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -16,17 +17,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heremanikandan.scriptifyevents.db.model.EventStatus
 
 @Composable
 fun AnimatedCountRow(
@@ -38,17 +49,18 @@ fun AnimatedCountRow(
     val animationDurationMillis = 5000
     val animatedParticipants by animateIntAsState(
         targetValue = participantCount.toInt(),
-        animationSpec = tween(durationMillis = animationDurationMillis)
+        animationSpec = tween(durationMillis = animationDurationMillis), label = ""
+
     )
 
     val animatedAttendance by animateIntAsState(
         targetValue = attendanceCount.toInt(),
-        animationSpec = tween(durationMillis = animationDurationMillis)
+        animationSpec = tween(durationMillis = animationDurationMillis), label = ""
     )
 
     val animatedDepartments by animateIntAsState(
         targetValue = departmentCount.toInt(),
-        animationSpec = tween(durationMillis = animationDurationMillis)
+        animationSpec = tween(durationMillis = animationDurationMillis), label = ""
     )
 
     Row(
@@ -121,3 +133,167 @@ fun StatCard(iconNumber: Int, label: String, size: Dp) {
         )
     }
 }
+//@Composable
+//fun EventStatusDropdown(
+//    selectedStatus: EventStatus,
+//    onStatusSelected: (EventStatus) -> Unit
+//) {
+//    val TAG = "EVENT STATUS DROP DOWN"
+//    var expanded by remember { mutableStateOf(false) }
+//    Log.d(TAG,"Event status dropdown called")
+//    Box(
+//        modifier = Modifier
+//            .padding(top = 16.dp)
+//            .clip(CircleShape)
+//            .background(MaterialTheme.colorScheme.primaryContainer)
+//            .clickable { expanded = true }
+//            .padding(horizontal = 24.dp, vertical = 12.dp)
+//    ) {
+//        Row(verticalAlignment = Alignment.CenterVertically) {
+//            Text(
+//                text = selectedStatus.name,
+//                color = MaterialTheme.colorScheme.onPrimaryContainer,
+//                fontWeight = FontWeight.Medium,
+//                fontSize = 16.sp
+//            )
+//            Icon(
+//                imageVector = Icons.Default.ArrowDropDown,
+//                contentDescription = "Select status",
+//                tint = MaterialTheme.colorScheme.onPrimaryContainer
+//            )
+//        }
+//
+//        DropdownMenu(
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false }
+//        ) {
+//            EventStatus.values().forEach { status ->
+//                DropdownMenuItem(
+//                    text = { Text(text = status.name) },
+//                    onClick = {
+//                        onStatusSelected(status)
+//                        expanded = false
+//                    }
+//                )
+//            }
+//        }
+//    }
+//}
+
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun EventStatusDropdown(
+//    selectedStatus: EventStatus,
+//    onStatusSelected: (EventStatus) -> Unit
+//) {
+//    var expanded by remember { mutableStateOf(false) }
+//    val TAG = "EVENT STATUS DROP DOWN"
+//    Log.d(TAG,"Event status dropdown called")
+//    ExposedDropdownMenuBox(
+//        expanded = expanded,
+//        onExpandedChange = { expanded = !expanded }
+//    ) {
+//        TextField(
+//            readOnly = true,
+//            value = selectedStatus.name,
+//            onValueChange = {},
+//            label = { Text("Event Status") },
+//            trailingIcon = {
+//                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+//            },
+//            modifier = Modifier
+//                .menuAnchor()
+//                .fillMaxWidth()
+//        )
+//
+//        ExposedDropdownMenu(
+//
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false }
+//
+//        ) {
+//            EventStatus.values().forEach { status ->
+//                DropdownMenuItem(
+//                    text = { Text(status.name) },
+//                    onClick = {
+//                        onStatusSelected(status)
+//                        expanded = false
+//                    }
+//                )
+//            }
+//        }
+//    }
+//}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EventStatusDropdown(
+    selectedStatus: EventStatus,
+    onStatusSelected: (EventStatus) -> Unit,
+
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    // Log for debugging
+    Log.d("EVENT STATUS DROP DOWN", "Dropdown Composable called")
+
+    // Custom colors and text styles
+    val containerColor = MaterialTheme.colorScheme.primaryContainer
+    val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val textStyle = TextStyle(
+        color = contentColor,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Medium
+    )
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+    ) {
+        TextField(
+            readOnly = true,
+            value = selectedStatus.name,
+            onValueChange = {},
+            label = { Text("Event Status", color = contentColor) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(
+                    focusedContainerColor = containerColor,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    focusedLabelColor = contentColor,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.primaryContainer,
+                    focusedTrailingIconColor = MaterialTheme.colorScheme.onPrimary,
+                    unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSecondary,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.onPrimary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledIndicatorColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ,
+            textStyle = textStyle,
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+                .height(56.dp)
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            EventStatus.values().forEach { status ->
+                DropdownMenuItem(
+                    text = { Text(status.name, style = textStyle) },
+                    onClick = {
+                        onStatusSelected(status) // ⬅️ Callback to update state & DB
+                        expanded = false
+                    },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary)
+
+                )
+            }
+        }
+    }
+}
+
+

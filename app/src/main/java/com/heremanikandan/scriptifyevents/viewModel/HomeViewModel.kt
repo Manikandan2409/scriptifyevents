@@ -1,11 +1,13 @@
 package com.heremanikandan.scriptifyevents.viewModel
 
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.EventStatus
+import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,13 +18,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class HomeViewModel(private val eventDao: EventDao) : ViewModel() {
+class HomeViewModel(private val eventDao: EventDao,private val context: Context) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     private val _sortOrder = MutableStateFlow(SortOrder.NONE) // Default: No sorting
     private val _filterByStatus = MutableStateFlow(FilterType.ALL)
     private val _dateRange = MutableStateFlow<Pair<Long?, Long?>>(null to null) // Start & End Date
-
-    private val allEvents = eventDao.getAllEvents()
+    private  val sharedPrefManager = SharedPrefManager(context)
+    private val allEvents = eventDao.getAllEventsByUserId(sharedPrefManager.getUserUid()!!)
 
     val filteredEvents: StateFlow<List<Event>> = combine(
         allEvents,
@@ -71,6 +73,14 @@ class HomeViewModel(private val eventDao: EventDao) : ViewModel() {
         filteredList
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    suspend fun  getEventById(eventId:Long):Event?{
+         return   eventDao.getEventById(eventId)
+    }
+
+    suspend fun deleteEvent(event: Event){
+        eventDao.deleteEvent(event)
+    }
+
     // ✅ **Update search query**
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -105,8 +115,6 @@ class HomeViewModel(private val eventDao: EventDao) : ViewModel() {
     fun sortEvents(ascending: Boolean) {
         _sortOrder.value = if (ascending) SortOrder.ASCENDING else SortOrder.DESCENDING
     }
-
-
     suspend fun isEventNameExists(eventName: String): Boolean {
         return withContext(Dispatchers.IO) {
             eventDao.getEventByName(eventName) != null

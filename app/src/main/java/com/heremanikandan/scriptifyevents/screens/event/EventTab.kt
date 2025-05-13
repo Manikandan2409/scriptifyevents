@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.drawer.event
+package com.heremanikandan.scriptifyevents.screens.event
 
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
@@ -34,9 +34,9 @@ import androidx.navigation.NavController
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.repos.AttendanceRepository
-import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.AttendeesScreen
-import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.OverviewScreen
-import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.ParticipantsScreen
+import com.heremanikandan.scriptifyevents.screens.event.manageEvents.AttendeesScreen
+import com.heremanikandan.scriptifyevents.screens.event.manageEvents.OverviewScreen
+import com.heremanikandan.scriptifyevents.screens.event.manageEvents.ParticipantsScreen
 
 sealed class EventTab(val route: String, val icon: ImageVector, val label: String) {
     object Overview : EventTab("overview", Icons.Default.Info, "Overview")

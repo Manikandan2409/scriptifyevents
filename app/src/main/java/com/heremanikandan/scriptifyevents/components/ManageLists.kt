@@ -46,7 +46,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heremanikandan.scriptifyevents.db.model.Participant
-import com.heremanikandan.scriptifyevents.drawer.event.manageEvents.openFilePicker
+import com.heremanikandan.scriptifyevents.screens.event.manageEvents.openFilePicker
 import com.heremanikandan.scriptifyevents.viewModel.ParticipantViewModel
 
 // 🔍 Search and Sort Bar + Layout Switch

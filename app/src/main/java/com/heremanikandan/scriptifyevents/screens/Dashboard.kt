@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.heremanikandan.scriptifyevents.drawer.DrawerContent
-import com.heremanikandan.scriptifyevents.drawer.SideBarNavigationHost
+import com.heremanikandan.scriptifyevents.screens.drawer.DrawerContent
+import com.heremanikandan.scriptifyevents.screens.drawer.SideBarNavigationHost
 import com.heremanikandan.scriptifyevents.utils.NetworkObserver
 import kotlinx.coroutines.launch
 
