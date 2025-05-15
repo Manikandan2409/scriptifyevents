@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.auth.AuthManager
-import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
 import com.heremanikandan.scriptifyevents.utils.generateOtp
 import com.heremanikandan.scriptifyevents.utils.sendOTP
 import kotlinx.coroutines.delay
@@ -59,19 +58,9 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
     val context = LocalContext.current
     val authManager:AuthManager = AuthManager(context)
 
-
-
-
-
-
-    // Focus requesters for OTP input fields
     val focusRequesters = List(6) { FocusRequester() }
 
-
-
-
     fun resendOtp(email: String, callback: (String?, String?) -> Unit) {
-       // coroutineScope.launch {
             try {
                 val otp = generateOtp()
                 sendOTP(email, otp,
@@ -97,8 +86,6 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
             }
         }
 
-
-
     // Timer countdown effect
     LaunchedEffect(timer) {
         while (timer > 0) {
@@ -110,7 +97,7 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+        contentColor = MaterialTheme.colorScheme.onTertiary,
         topBar = {
             TopAppBar(title = { Text("OTP Verification", fontSize = 18.sp) })
         }) { paddingValues ->
@@ -123,7 +110,6 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
         ) {
             Text("Enter the OTP sent to $email", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(16.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -175,11 +161,11 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
 
             Button(
                 onClick = {
-                    Log.d("OTP ENTEREd","OTP VALUE : $otp")
+                    Log.d("OTP ENTERED","OTP VALUE : $otp")
                     authManager.verifyOtp(email, otp.joinToString("")) { success ->
                         if (success) {
-                            // OTP verification succeeded, navigate to the dashboard or perform further actions
-                            navController.navigate(Screen.Dashboard.route)
+
+                            navController.navigate(Screen.password.setPassword(email))
                             //authManager.sign
                         } else {
                             // OTP verification failed, handle the error (e.g., show error message)
@@ -210,34 +196,15 @@ fun OtpVerificationScreen(email: String, navController: NavController) {
                     .padding(horizontal = 16.dp)
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Yellow60,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
             {
                 Text("Resend OTP")
             }
-
         }
     }
 }
 
-//fun verifyOtp(email: String, enteredOtp: String, callback: (String?, String?) -> Unit) {
-//    val TAG = "OTP VERIFICATION"
-//    val database = FirebaseDatabase.getInstance().getReference("otp_verifications").child(email.replace(".", ","))
-//    database.get().addOnSuccessListener { snapshot ->
-//        val storedOtp = snapshot.getValue(String::class.java)
-//        Log.d(TAG, "verifyOtp: $storedOtp -- enterend otp: $enteredOtp")
-//        if (storedOtp != null && storedOtp == enteredOtp) {
-//            Log.d("OTP VERIFICATION", "OTP VERIFIED")
-//            callback("OTP Verified Successfully", null)
-//        } else {
-//            Log.d("OTP VERIFICATION", "INVALID OTP")
-//            callback(null, "Invalid OTP. Please try again.")
-//        }
-//    }.addOnFailureListener {
-//        callback(null, "Error verifying OTP.")
-//        Log.d("OTP VERIFICATION", "ERROR VERIFYING OTP")
-//    }
-//}
 

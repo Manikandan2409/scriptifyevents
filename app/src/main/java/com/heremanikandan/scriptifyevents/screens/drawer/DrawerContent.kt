@@ -20,7 +20,7 @@ import com.heremanikandan.scriptifyevents.MainActivity
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.auth.AuthManager
 import com.heremanikandan.scriptifyevents.screens.menu.ProfileHeader
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

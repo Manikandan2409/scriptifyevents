@@ -88,6 +88,7 @@ fun EventScreen(eventId: String,navController: NavController) {
 
             // Bottom Navigation Bar
         NavigationBar(
+            tonalElevation = 0.dp,
             modifier = Modifier
                 .fillMaxWidth(),
             containerColor = MaterialTheme.colorScheme.primary
@@ -108,8 +109,8 @@ fun EventScreen(eventId: String,navController: NavController) {
                     },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primaryContainer,
-                        unselectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onTertiary,
+                        selectedTextColor = MaterialTheme.colorScheme.onTertiary,
                         unselectedTextColor = MaterialTheme.colorScheme.onTertiary,
                         indicatorColor = Color.Transparent // No background highlight
                     ),

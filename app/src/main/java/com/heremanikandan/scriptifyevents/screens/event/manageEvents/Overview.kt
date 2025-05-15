@@ -50,7 +50,7 @@ import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.dao.SharedWithDao
 import com.heremanikandan.scriptifyevents.db.model.EventStatus
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
 import com.heremanikandan.scriptifyevents.viewModel.OverviewViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.OverviewViewModelFactory

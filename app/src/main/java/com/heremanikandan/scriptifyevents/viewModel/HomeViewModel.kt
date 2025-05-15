@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.heremanikandan.scriptifyevents.db.dao.EventDao
 import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.EventStatus
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

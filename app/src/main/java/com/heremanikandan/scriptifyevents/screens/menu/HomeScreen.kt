@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -55,7 +54,7 @@ import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.Screen
 import com.heremanikandan.scriptifyevents.components.EventCard
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import com.heremanikandan.scriptifyevents.utils.convertMillisToDateTime
 import com.heremanikandan.scriptifyevents.viewModel.FilterType
 import com.heremanikandan.scriptifyevents.viewModel.HomeViewModel
@@ -67,7 +66,6 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val localEvents = ScriptyManager.getInstance(context).EventDao()
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(localEvents,context))
@@ -79,6 +77,7 @@ fun HomeScreen(navController: NavController) {
     val selectedEvents = remember { mutableStateListOf<Long>() }
     var isSelectionMode by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
     Box(
         Modifier
             .fillMaxSize()
@@ -172,7 +171,6 @@ fun HomeScreen(navController: NavController) {
                     }
                 }
             }
-
             // EVENT LIST
             if (events.isEmpty()) {
                 EmptyState()
@@ -263,11 +261,8 @@ fun HomeScreen(navController: NavController) {
                 Icon(Icons.Filled.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
             }
         }
-
-
     }
 }
-
 
 @Composable
 fun EmptyState() {

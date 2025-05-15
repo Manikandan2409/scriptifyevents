@@ -148,7 +148,6 @@ fun openFilePicker(filePickerLauncher: (Intent) -> Unit) {
     intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
     filePickerLauncher(intent)
 }
-
 fun handleFileResult(
     context: Context,
     result: ActivityResult,
@@ -197,7 +196,6 @@ fun handleFileResult(
     }
 
 }
-
 @Composable
 fun NoParticipantsView() {
     Box(

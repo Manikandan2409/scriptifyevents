@@ -29,7 +29,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.heremanikandan.scriptifyevents.R
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 
 @Composable
 fun ProfileHeader() {

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.Screen
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import kotlinx.coroutines.delay
 
 @SuppressLint("SuspiciousIndentation")

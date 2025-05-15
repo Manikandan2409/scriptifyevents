@@ -1,6 +1,5 @@
 
 package com.heremanikandan.scriptifyevents.auth
-
 import android.content.Context
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -17,22 +16,18 @@ import com.google.firebase.database.FirebaseDatabase
 import com.heremanikandan.scriptifyevents.R
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.model.User
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import kotlinx.coroutines.tasks.await
 import java.security.MessageDigest
 import java.util.UUID
-
 class AuthManager(private val context: Context) {
-
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val credentialManager: CredentialManager = CredentialManager.create(context)
     private val sharedPrefManager = SharedPrefManager(context)
-
     companion object {
         private const val GOOGLE_SIGN_IN_REQUEST_CODE = 101
         const val REQUEST_AUTHORIZE = 1001
     }
-
     suspend fun signInWithGoogle(
         context: Context,
         activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
@@ -57,6 +52,7 @@ class AuthManager(private val context: Context) {
             val credential = result.credential
 
             if (credential is CustomCredential &&
+
                 credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
 
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
@@ -64,7 +60,6 @@ class AuthManager(private val context: Context) {
 
                 val authCredential = GoogleAuthProvider.getCredential(idToken, null)
                 val result = auth.signInWithCredential(authCredential).await()
-
                 val user = auth.currentUser
 
                 sharedPrefManager.saveUser(
@@ -73,6 +68,7 @@ class AuthManager(private val context: Context) {
                     email = user?.email,
                     photoUrl = user?.photoUrl
                 )
+
                 val db = ScriptyManager.getInstance(context)
                 val dbusers=db.userDao()
                 val newUser =User(
@@ -84,10 +80,6 @@ class AuthManager(private val context: Context) {
                 dbusers.insertUser(newUser)
 
                 Log.d("Auth", "User Signed In: ${user?.email}")
-
-                // ✅ Step 2: Request Additional Scopes using Launcher
-               // requestAdditionalPermissionsIfNeeded(context, activityResultLauncher)
-                Log.d("Auth", "RETURNING TRUE")
                 return true
             }
             false
@@ -96,101 +88,6 @@ class AuthManager(private val context: Context) {
             false
         }
     }
-
-//    fun requestAdditionalPermissionsIfNeeded(
-//        context: Context,
-//        activityResultLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>
-//    ) {
-//        val TAG = "REQUEST_PERMISSIONS"
-//        Log.d(TAG,"Start of checkign the permission")
-//        val user = auth.currentUser ?: return
-//        val userUid = user.uid
-//        val currentPermissions = sharedPrefManager.getPermissionsForUser(userUid)
-//
-//        val requiredScopes = mutableListOf<Scope>()
-//
-//        if (!currentPermissions["drive"]!!) requiredScopes.add(Scope(DriveScopes.DRIVE_FILE))
-//        if (!currentPermissions["gmail"]!!) {
-//            requiredScopes.add(Scope(GmailScopes.GMAIL_READONLY))
-//            requiredScopes.add(Scope(GmailScopes.GMAIL_COMPOSE))
-//        }
-//        if (!currentPermissions["calendar"]!!) requiredScopes.add(Scope(CalendarScopes.CALENDAR))
-//        if (!currentPermissions["sheets"]!!) requiredScopes.add(Scope(SheetsScopes.SPREADSHEETS))
-//        if (!currentPermissions["slides"]!!) requiredScopes.add(Scope(SlidesScopes.PRESENTATIONS))
-//
-//        Log.d(TAG,"SEETED ALL THE PERMISSION")
-//        if (requiredScopes.isEmpty()) {
-//            Log.d("Auth", "All permissions already granted for $userUid")
-//            return
-//        }
-//
-//        val authorizationRequest = AuthorizationRequest.builder()
-//            .setRequestedScopes(requiredScopes)
-//            .build()
-//
-//        Identity.getAuthorizationClient(context)
-//            .authorize(authorizationRequest)
-//            .addOnSuccessListener { authorizationResult ->
-//                if (authorizationResult.hasResolution()) {
-//                    val pendingIntent = authorizationResult.getPendingIntent()
-//                    Log.d(TAG,"going to invoke al the permissions")
-//                    try {
-//                        val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent!!).build()
-//                        activityResultLauncher.launch(intentSenderRequest)
-//                    } catch (e: IntentSender.SendIntentException) {
-//                        Log.e("Authorization", "Couldn't start Authorization UI: ${e.localizedMessage}")
-//                    }
-//                } else {
-//                    val grantedScopes = requiredScopes.map { it.scopeUri }
-//                    saveUserPermissionsLocally(userUid, grantedScopes)
-//                }
-//            }
-//            .addOnFailureListener { e ->
-//                Log.e("Authorization", "Failed to authorize: ${e.localizedMessage}")
-//            }
-//    }
-
-    /**
-     * Store granted permissions in Firebase
-     */
-
-    fun saveUserPermissionsLocally(userUid: String, grantedScopes: List<String>) {
-        val permissions = mapOf(
-            "drive" to grantedScopes.any { it.contains("drive") },
-            "gmail" to grantedScopes.any { it.contains("gmail") },
-            "calendar" to grantedScopes.any { it.contains("calendar") },
-            "sheets" to grantedScopes.any { it.contains("spreadsheets") },
-            "slides" to grantedScopes.any { it.contains("presentations") }
-        )
-        sharedPrefManager.savePermissionsForUser(userUid, permissions)
-        Log.d("Permissions", "Saved locally for user $userUid: $permissions")
-    }
-
-
-
-    fun saveUserPermissions() {
-        val user = auth.currentUser ?: return
-
-        val permissions = mapOf(
-            "drive" to true,
-            "gmail" to true,
-            "calendar" to true,
-            "sheets" to true,
-            "slides" to true
-        )
-
-//        FirebaseDatabase.getInstance().getReference("users/${user.uid}/permissions")
-//            .setValue(permissions)
-//            .addOnSuccessListener {
-//                Log.d("Permissions", "User permissions saved successfully!")
-//            }
-//            .addOnFailureListener {
-//                Log.e("Permissions", "Failed to save permissions: ${it.message}")
-//            }
-    }
-
-
-
     /**
      * Sign Up / Sign In with Email & Password
      */
@@ -204,7 +101,6 @@ class AuthManager(private val context: Context) {
             false
         }
     }
-
     /**
      * Sign Out
      */
@@ -212,7 +108,6 @@ class AuthManager(private val context: Context) {
         auth.signOut()
         sharedPrefManager.signOut()
     }
-
     /**
      * Check if Email Exists
      */
@@ -251,7 +146,6 @@ class AuthManager(private val context: Context) {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
-
     /**
      * Verify OTP
      */

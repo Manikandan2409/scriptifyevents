@@ -44,7 +44,7 @@ import com.heremanikandan.scriptifyevents.db.model.Attendance
 import com.heremanikandan.scriptifyevents.db.model.AttendanceMode
 import com.heremanikandan.scriptifyevents.db.repos.AttendanceRepository
 import com.heremanikandan.scriptifyevents.utils.CaptureActivityPortrait
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import com.heremanikandan.scriptifyevents.utils.files.Excel
 import com.heremanikandan.scriptifyevents.viewModel.AttendanceViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.AttendanceViewModelFactory

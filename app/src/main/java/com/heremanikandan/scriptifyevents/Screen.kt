@@ -8,6 +8,9 @@ sealed class Screen(val route: String) {
     object OtpVerification : Screen("otp_verification/{email}") { // Accept email parameter
         fun createRoute(email: String) = "otp_verification/$email" // Function to generate route
     }
+    object  password :Screen("password/{email}"){
+        fun setPassword(email: String) = "password/$email"
+    }
 
     object Home : Screen("home")
     object Settings : Screen("settings")

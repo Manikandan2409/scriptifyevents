@@ -123,12 +123,9 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
         }
     }
 
-
-
 /*  for future reference
 
   */
-
 
     fun insertAttendance(attendance: Attendance) {
         viewModelScope.launch {
@@ -137,18 +134,5 @@ class AttendanceViewModel(private val repository: AttendanceRepository,private v
             Log.d(TAG,"returned to attendance viewModel")
         }
     }
-//
-//    fun updateAttendance(attendance: Attendance) {
-//        viewModelScope.launch {
-//            repository.updateAttendance(attendance)
-//        }
-//    }
 
-
-//    fun getParticipantWithAttendance(participantId: Long) {
-//        viewModelScope.launch {
-//            val participantWithAttendance = repository.getParticipantWithAttendance(participantId)
-//            Log.d("AttendanceViewModel", "Data: $participantWithAttendance")
-//        }
-//    }
 }

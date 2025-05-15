@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -53,7 +54,7 @@ fun SignUpScreen(navController: NavController) {
     var emailStatus by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    val authManager:AuthManager = AuthManager(context)
+    val authManager = AuthManager(context)
     @SuppressLint("SuspiciousIndentation")
     fun generateAndSendOTP(email: String) {
         isLoading = true
@@ -71,6 +72,7 @@ fun SignUpScreen(navController: NavController) {
                             },
                             onFailure = { exception ->
                                 Log.e("Firebase", "Error storing OTP: ${exception.message}")
+                                Toast.makeText(context,"Error while sending OTP try again later",Toast.LENGTH_SHORT).show()
                             }
                         )
                     },
@@ -102,29 +104,6 @@ fun SignUpScreen(navController: NavController) {
         }
     }
 
-//    fun checkEmailExistsAndProceed(inputEmail: String) {
-//        isLoading = true
-//        FirebaseAuth.getInstance().fetchSignInMethodsForEmail(inputEmail)
-//            .addOnCompleteListener { task ->
-//                isLoading = false
-//                if (task.isSuccessful) {
-//                    val signInMethods = task.result?.signInMethods
-//                    if (!signInMethods.isNullOrEmpty()) {
-//                        emailStatus = "Already exists"
-//                        Toast.makeText(context, "Email already exists", Toast.LENGTH_SHORT).show()
-//                    } else {
-//                        emailStatus = "Valid email"
-//                        generateAndSendOTP(inputEmail)
-//                    }
-//                } else {
-//                    emailStatus = "Error checking email"
-//                    Toast.makeText(context, "Error checking email", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//    }
-
-
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -152,6 +131,7 @@ fun SignUpScreen(navController: NavController) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+//
             OutlinedTextField(
                 value = email,
                 onValueChange = { newEmail ->
@@ -161,7 +141,32 @@ fun SignUpScreen(navController: NavController) {
                 label = { Text("Email") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+//
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    disabledTextColor = MaterialTheme.colorScheme.onTertiary,
+                    errorTextColor = Color.Red,
+
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = MaterialTheme.colorScheme.onPrimary,
+                    errorContainerColor = Color.Transparent,
+
+                    cursorColor = MaterialTheme.colorScheme.onTertiary,
+                    errorCursorColor = MaterialTheme.colorScheme.onTertiary,
+
+                    focusedLabelColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onTertiary,
+                    disabledLabelColor = MaterialTheme.colorScheme.onTertiary,
+                    errorLabelColor = Color.Red,
+
+                    focusedBorderColor = MaterialTheme.colorScheme.primaryContainer,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primaryContainer,
+                    disabledBorderColor = MaterialTheme.colorScheme.primaryContainer,
+                    errorBorderColor = Color.Red
+                )
             )
 
             if (emailStatus.isNotEmpty()) {

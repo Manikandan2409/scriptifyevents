@@ -21,10 +21,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -48,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import com.heremanikandan.scriptifyevents.screens.event.manageEvents.openFilePicker
 import com.heremanikandan.scriptifyevents.viewModel.ParticipantViewModel
-
 // 🔍 Search and Sort Bar + Layout Switch
 @Composable
 fun ParticipantSearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boolean, onLayoutToggle: () -> Unit) {
@@ -109,27 +109,29 @@ fun ParticipantSearchAndSortBar(viewModel: ParticipantViewModel, isGridView: Boo
             }
            Log.d("Participants","CREAtion of $it completed")
        }
-
         Spacer(modifier = Modifier.width(16.dp))
 
         // SORT DROPDOWN
         Box {
-            Button(onClick = { isAscending=!isAscending
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
+                ),
+                onClick = { isAscending=!isAscending
             viewModel.sortParticipants(sortOption,isAscending)}) {
-//                        Text("Sort")
                 Icon(
-                    imageVector = Icons.Default.Sort,
+                    imageVector = if (isAscending)Icons.Default.ArrowDownward else Icons.Default.ArrowUpward ,
                     contentDescription = "Sort",
                     tint = MaterialTheme.colorScheme.onTertiary
                 )
-                Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.primaryContainer)
+                Text(if (isAscending) "A-Z" else "Z-A", color = MaterialTheme.colorScheme.onTertiary)
 
             }
 
         }
     }
 }
-
 @Composable
 fun ParticipantsGridView(participants: List<Participant>, viewModel: ParticipantViewModel) {
     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier
@@ -143,7 +145,6 @@ fun ParticipantsGridView(participants: List<Participant>, viewModel: Participant
         }
     }
 }
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ParticipantGridItem(participant: Participant, onDelete: () -> Unit) {
@@ -179,7 +180,6 @@ fun ParticipantsListView(participants: List<Participant>, viewModel: Participant
         }
     }
 }
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ParticipantListItem(participant: Participant, onDelete: () -> Unit) {
@@ -213,7 +213,6 @@ fun ParticipantListItem(participant: Participant, onDelete: () -> Unit) {
         }
     }
 }
-
 @Composable
 fun FloatingAddButton(
     onAddParticipant: (String, String, String, String) -> Unit,
@@ -262,8 +261,6 @@ fun FloatingAddButton(
         )
     }
 }
-
-
 @Composable
 fun AddParticipantDialog(onDismiss: () -> Unit, onAdd: (String, String, String, String) -> Unit) {
     var name by remember { mutableStateOf("") }

@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -36,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,9 +52,7 @@ import com.heremanikandan.scriptifyevents.components.isExactAlarmPermissionGrant
 import com.heremanikandan.scriptifyevents.db.ScriptyManager
 import com.heremanikandan.scriptifyevents.db.model.Event
 import com.heremanikandan.scriptifyevents.db.model.EventStatus
-import com.heremanikandan.scriptifyevents.db.model.Reminder
-import com.heremanikandan.scriptifyevents.ui.theme.Yellow60
-import com.heremanikandan.scriptifyevents.utils.SharedPrefManager
+import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
 import com.heremanikandan.scriptifyevents.utils.convertToMillis
 import com.heremanikandan.scriptifyevents.utils.notification.scheduleNotification
 import com.heremanikandan.scriptifyevents.viewModel.AddEventViewModel
@@ -74,8 +78,6 @@ fun AddEvent(
     val localReminder = ScriptyManager.getInstance(context).ReminderDao()
     val viewModel: AddEventViewModel = viewModel(factory = AddEventViewModelFactory(localDbEvent))
     val coroutineScope = rememberCoroutineScope()
-
-
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
     val today = remember { Calendar.getInstance() }
@@ -89,7 +91,6 @@ fun AddEvent(
     var isReminderEnabled by remember { mutableStateOf(false) }
     var reminderDate by remember { mutableStateOf(today.time) }
     var reminderTime by remember { mutableStateOf(today.time) }
-
     var eventNameError by remember { mutableStateOf<String?>(null) }
     var eventDateError by remember { mutableStateOf<String?>(null) }
     var reminderDateError by remember { mutableStateOf<String?>(null) }
@@ -139,26 +140,37 @@ fun AddEvent(
     }
 
     suspend fun validateName(name: String?): Boolean {
-    val regex = Regex("^[a-zA-Z0-9_]{2,}\$")
+        val trimmedName = name?.trim()
+        val regex = Regex("^[a-zA-Z0-9_\\s]+$")
 
-    if (name.isNullOrBlank()) {
-        eventNameError = "Event name cannot be empty"
-        return false
-    }
-
-    if (!regex.matches(name)) {
-        eventNameError = "Event name must have at least 2 characters"
-        return false
-    }
-
-        if (viewModel.isEventNameExists(name)){
-            eventNameError ="Event already Excist"
-            return  false
+        if (trimmedName.isNullOrBlank()) {
+            eventNameError = "Event name cannot be empty"
+            return false
         }
 
-    eventNameError = null
-    return true
-}
+        if (trimmedName.length < 2) {
+            eventNameError = "Event name must have at least 2 letters"
+            return false
+        }
+
+        if (trimmedName.length > 31) {
+            eventNameError = "Event name must have at most 31 letters"
+            return false
+        }
+
+        if (!regex.matches(trimmedName)) {
+            eventNameError = "Event name must contain only letters, numbers, underscores, or spaces"
+            return false
+        }
+
+        if (viewModel.isEventNameExists(trimmedName)) {
+            eventNameError = "Event already exists"
+            return false
+        }
+
+        eventNameError = null
+        return true
+    }
 
     suspend fun getEventByName(eventName: String): Event? {
         return withContext(Dispatchers.IO) {
@@ -208,31 +220,77 @@ fun AddEvent(
             viewModel.insertEvent(newEvent) { isSuccess ->
                 Handler(Looper.getMainLooper()).post {
                     if (isSuccess) {
+                        scheduleNotification(context, eventName, "Reminder for $eventName", dateTimeMillis)
+
                         val reminderDateStr = dateFormatter.format(reminderDate)
                         val reminderTimeStr = timeFormatter.format(reminderTime)
                         val reminderTimeMillis = convertToMillis(reminderDateStr, reminderTimeStr)
+//                        coroutineScope.launch(Dispatchers.IO) {
+//                            val event = getEventByName(eventName)
+//                            event?.let {
+////                                val reminderId = localReminder.insertReminder(
+////                                    Reminder(eventId = it.id, reminderTimeMillis = reminderTimeMillis)
+////                                )
+//                                withContext(Dispatchers.Main) {
+//                                    if (isExactAlarmPermissionGranted(context)) {
+//                                        scheduleNotification(context, eventName, "Reminder for $eventName", reminderTimeMillis)
+//                                        scheduleNotification(context, eventName, "Event starts now", dateTimeMillis)
+//                                    }
+////                                    if (reminderId != null) {
+////                                        Toast.makeText(context, "Event and reminder added successfully",Toast.LENGTH_SHORT).show()
+////                                    }
+//                                    Toast.makeText(context, "Event Created successfully",Toast.LENGTH_SHORT).show()
+////
+//                                    navController.popBackStack()
+//                                }
+//                            }
+//                        }
 
-                        coroutineScope.launch(Dispatchers.IO) {
-                            val event = getEventByName(eventName)
-                            event?.let {
-                                val reminderId = localReminder.insertReminder(
-                                    Reminder(eventId = it.id, reminderTimeMillis = reminderTimeMillis)
-                                )
+                        //val coroutineScope = rememberCoroutineScope()
 
-                                withContext(Dispatchers.Main) {
+                        coroutineScope.launch {
+                            try {
+                                val event = withContext(Dispatchers.IO) { getEventByName(eventName) }
+                                if (event != null) {
+//                                    val reminderId = withContext(Dispatchers.IO) {
+//                                        localReminder.insertReminder(
+//                                            Reminder(eventId = event.id, reminderTimeMillis = reminderTimeMillis)
+//                                        )
+//                                    }
 
                                     if (isExactAlarmPermissionGranted(context)) {
-                                        scheduleNotification(context, eventName, "Reminder for $eventName", reminderTimeMillis)
-                                        scheduleNotification(context, eventName, "Event starts now", dateTimeMillis)
-                                    }
-                                    if (reminderId != null) {
-                                        Toast.makeText(context, "Event and reminder added successfully",Toast.LENGTH_SHORT).show()
+                                        scheduleNotification(
+                                            context = context,
+                                            title = eventName,
+                                            message = "Reminder for $eventName",
+                                            timeInMillis = reminderTimeMillis,
+                                            requestCode = (reminderTimeMillis / 1000).toInt()
+                                        )
+
+                                        scheduleNotification(
+                                            context = context,
+                                            title = eventName,
+                                            message = "Event starts now",
+                                            timeInMillis = dateTimeMillis,
+                                            requestCode = (dateTimeMillis / 1000).toInt()
+                                        )
                                     }
 
+//                                    if (reminderId != null) {
+//                                        Toast.makeText(context, "Event and reminder added successfully", Toast.LENGTH_SHORT).show()
+//                                    }
+                                    Toast.makeText(context, "Event created successfully", Toast.LENGTH_SHORT).show()
+
                                     navController.popBackStack()
+                                } else {
+                                    Toast.makeText(context, "Event not found", Toast.LENGTH_SHORT).show()
                                 }
+                            } catch (e: Exception) {
+                                Log.e("AddEvent", "Failed to save event and reminder", e)
+                                Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
                             }
                         }
+
                     } else {
                         Toast.makeText(context, "Failed to add event.", Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
@@ -258,6 +316,7 @@ fun AddEvent(
 //            event name
             OutlinedTextField(
                 value = eventName,
+                singleLine = true,
                 onValueChange =
                 {
                     eventName = it
@@ -265,30 +324,72 @@ fun AddEvent(
                        validateName(it)
                    }
                 },
+                    leadingIcon = {
+                        Icon(
+                        imageVector = Icons.Default.Title,
+                        contentDescription = "Event Icon"
+                    )},
                 label = { Text("Event Name", color = MaterialTheme.colorScheme.onTertiary) },
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary),
                 isError = eventNameError != null,
                 modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary, fontSize = 18.sp, fontWeight = FontWeight.Bold),
+
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Gray,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    focusedBorderColor = MaterialTheme.colorScheme.onSecondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    errorBorderColor = Color.Red,
+                    cursorColor = MaterialTheme.colorScheme.onTertiary,
+                    focusedLabelColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onTertiary.copy(0.2f),
+                    errorLabelColor = Color.Red,
+                    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.1f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                 )
             )
             eventNameError?.let { Text(it, color = Color.Red, fontSize = 12.sp) }
 // event description
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = {  if (it.length <= 250) description = it },
                 label = { Text("Description", color = MaterialTheme.colorScheme.onTertiary) },
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onTertiary, fontSize = 16.sp),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = "Event Description"
+                    )},
+
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Gray,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    focusedBorderColor = MaterialTheme.colorScheme.onSecondary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    errorBorderColor = Color.Red,
+                    cursorColor = MaterialTheme.colorScheme.onTertiary,
+                    focusedLabelColor = MaterialTheme.colorScheme.onTertiary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onTertiary.copy(0.2f),
+                    errorLabelColor = Color.Red,
+                    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.1f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                 )
 
             )
 
+//            DatePickerField(
+//                label = "Event Date",
+//                selectedDate = eventDate,
+//                onDateSelected = {
+//                    eventDate = it
+//                    validateEventDate(it)
+//                },
+//                errorMessage = eventDateError,
+//                boxColor = MaterialTheme.colorScheme.secondary,
+//                textColor = MaterialTheme.colorScheme.onTertiary,
+//
+//            )
             DatePickerField(
                 label = "Event Date",
                 selectedDate = eventDate,
@@ -348,7 +449,7 @@ fun AddEvent(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Yellow60,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiary
                 )
 

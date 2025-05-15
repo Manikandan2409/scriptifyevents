@@ -12,14 +12,12 @@ import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
-
-
  fun sendOTP(email: String, otp:String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
 
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val senderEmail = "scriptifyevents@gmail.com"
-            val senderPassword = "egjf mqvu capb rgqx"
+            val senderPassword = "sinb mnnw xmwb adsm"
 
             val props = Properties().apply {
                 put("mail.smtp.auth", "true")

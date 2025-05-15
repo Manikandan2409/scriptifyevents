@@ -26,12 +26,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -109,7 +110,6 @@ fun AttendanceItem(attendance: AttendanceDTO) {
     ) {
         Column(modifier = Modifier
             .padding(16.dp)
-        //    .background(MaterialTheme.colorScheme.onSecondary)
         )
         {
             Icon(
@@ -179,145 +179,6 @@ fun AttendanceManageActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, 
 /**
  *  Manual attendance Dialog
  **/
-
-//@Composable
-//fun AddAttendanceDialog(onDismiss: () -> Unit, onAddAttendance: (String) -> Unit) {
-//    val context = LocalContext.current
-//    val rollNo = remember { mutableStateOf("") }
-//    val focusRequester = remember { FocusRequester() }
-//    val keyboardController = LocalSoftwareKeyboardController.current
-//
-//    AlertDialog(
-//        onDismissRequest = { onDismiss() },
-//        title = { Text(text = "Add Attendance") },
-//        text = {
-//            Column {
-//                Text(text = "Enter Roll No:")
-//                BasicTextField(
-//                    value = rollNo.value,
-//                    onValueChange = { rollNo.value = it }
-//                )
-//            }
-//        },
-//        confirmButton = {
-//            TextButton(onClick = {
-//                if (rollNo.value.isNotEmpty()) {
-//
-//                    onAddAttendance(rollNo.value)
-//                } else {
-//                    Toast.makeText(context, "Roll No is required!", Toast.LENGTH_SHORT).show()
-//                }
-//            }) {
-//                Text("Add")
-//            }
-//        },
-//        dismissButton = {
-//            TextButton(onClick = { onDismiss() }) {
-//                Text("Cancel")
-//            }
-//        }
-//    )
-//}
-
-//@Composable
-//fun AddAttendanceDialog(
-//    onDismiss: () -> Unit,
-//    onAddAttendance: (String) -> Unit
-//) {
-//    val context = LocalContext.current
-//    val rollNo = remember { mutableStateOf("") }
-//    val focusRequester = remember { FocusRequester() }
-//    val keyboardController = LocalSoftwareKeyboardController.current
-//
-//    Dialog(onDismissRequest = onDismiss) {
-//        Surface(
-//            shape = RoundedCornerShape(12.dp),
-//            color = MaterialTheme.colorScheme.onPrimary // Background color of the whole dialog
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//
-//            ) {
-//                // Custom Header
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .background(MaterialTheme.colorScheme.primaryContainer) // Header background
-//                        .padding(24.dp)
-//                ) {
-//                    Text(
-//                        text = "Add Attendance",
-//                        style = MaterialTheme.typography.titleLarge.copy(
-//                            color = MaterialTheme.colorScheme.onTertiary,
-//                            fontWeight = FontWeight.Bold
-//                        )
-//                    )
-//                }
-//            }
-//            Column(
-//                modifier = Modifier.fillMaxWidth().padding(72.dp)
-//            ) {
-//
-//
-//                Spacer(modifier = Modifier.height(16.dp))
-//
-//                Text(text = "Enter Roll No:")
-//
-//                BasicTextField(
-//                    value = rollNo.value,
-//                    onValueChange = { rollNo.value = it.uppercase() }, // Convert to uppercase
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .border(1.dp, MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(8.dp))
-//                        .padding(12.dp)
-//                        .focusRequester(focusRequester),
-//                )
-//
-//                Spacer(modifier = Modifier.height(24.dp))
-//
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.End
-//                ) {
-//                    TextButton(
-//                        onClick = onDismiss,
-//                        colors = ButtonDefaults.textButtonColors(
-//                            contentColor = Color.Black
-//                        )
-//                    ) {
-//                        Text("Cancel")
-//                    }
-//
-//                    Spacer(modifier = Modifier.width(8.dp))
-//
-//                    TextButton(
-//                        onClick = {
-//                            if (rollNo.value.isNotEmpty()) {
-//                                onAddAttendance(rollNo.value)
-//                            } else {
-//                                Toast.makeText(context, "Roll No is required!", Toast.LENGTH_SHORT).show()
-//                            }
-//                        },
-//                        colors = ButtonDefaults.textButtonColors(
-//                            contentColor = MaterialTheme.colorScheme.primaryContainer // Purple
-//                        )
-//                    ) {
-//                        Text("Add")
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    // Automatically request focus and show keyboard
-//    LaunchedEffect(Unit) {
-//        delay(300)
-//        focusRequester.requestFocus()
-//        keyboardController?.show()
-//    }
-//}
-
 @Composable
 fun AddAttendanceDialog(
     onDismiss: () -> Unit,
@@ -359,7 +220,7 @@ fun AddAttendanceDialog(
                         .fillMaxWidth()
                         .padding(vertical = 16.dp, horizontal = 12.dp)
                 ) {
-                    // Roll No Input
+
                     Text(text = "Enter Roll No:")
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -422,7 +283,6 @@ fun AddAttendanceDialog(
     }
 }
 
-
 /**
  *  Attendance Search bar
 **/
@@ -450,7 +310,6 @@ fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boole
                 .weight(1f)
                 .padding(end = 8.dp)
         )
-
         // Toggle between Grid and List View
         IconButton(onClick = onLayoutToggle) {
             Icon(
@@ -487,14 +346,20 @@ fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boole
         Spacer(modifier = Modifier.width(16.dp))
 
         Box {
-            Button(onClick = { isAscending=!isAscending
-                viewModel.sortAttendance(sortOption,isAscending)}) {
+            Button(
+                onClick = { isAscending=!isAscending
+                viewModel.sortAttendance(sortOption,isAscending)},
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
+                )
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Sort,
+                    imageVector = if (isAscending)Icons.Default.ArrowDownward else Icons.Default.ArrowUpward ,
                     contentDescription = "Sort",
                     tint = MaterialTheme.colorScheme.onTertiary
                 )
-                Text(if (isAscending) "Ascending" else "Descending", color = MaterialTheme.colorScheme.primaryContainer)
+                Text(if (isAscending) "A-Z" else "Z-A", )
 
             }
 

@@ -1,4 +1,4 @@
-package com.heremanikandan.scriptifyevents.utils
+package com.heremanikandan.scriptifyevents.sharedPref
 
 import android.content.Context
 import android.content.SharedPreferences
