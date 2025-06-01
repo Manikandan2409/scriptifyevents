@@ -59,7 +59,11 @@ private fun loadParticipants() {
         }
     }
 
-
+    fun updateParticipant(participant: Participant) {
+        viewModelScope.launch {
+            participantDao.updateParticipant(participant)
+        }
+    }
     fun sortParticipants(option: String, ascending: Boolean) {
         if (_participants.value.isEmpty()) return
 

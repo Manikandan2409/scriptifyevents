@@ -29,19 +29,21 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TypeSpecimen
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -133,11 +135,14 @@ fun AttendanceManageActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(12.dp),
         contentAlignment = Alignment.BottomEnd
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.End) {
+        Column( modifier = Modifier
+            .align(Alignment.BottomEnd),
+
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
             AnimatedVisibility(visible = expanded) {
                 FloatingActionButton(
@@ -157,18 +162,18 @@ fun AttendanceManageActionButtons(onAddClick: () -> Unit, onQRClick:() -> Unit, 
                     onClick = onAddClick,
                     modifier = Modifier
                         .size(42.dp)
-                        .offset(x = (-56).dp) // move leftwards
+                        .offset(y = (-12).dp) // move leftwards
                     ,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     contentColor = MaterialTheme.colorScheme.surface
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add ")
+                    Icon(Icons.Default.TypeSpecimen, contentDescription = "Add ")
                 }
             }
             FloatingActionButton(onClick = { expanded=!expanded} ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Attendance")
             }
-            Spacer(modifier = Modifier.height(8.dp))
+          //  Spacer(modifier = Modifier.height(8.dp))
             FloatingActionButton(onClick = onExportClick) {
                 Icon(Icons.Default.Save, contentDescription = "Export Attendance")
             }
@@ -292,6 +297,7 @@ fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boole
     var sortOption by remember { mutableStateOf("Id") }
     var isAscending by remember { mutableStateOf(true) }
     val sortingOptions = listOf("Id","Name","Roll No")
+    val isListButtonVisible by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -304,18 +310,35 @@ fun AttendanceSearchAndSortBar(viewModel: AttendanceViewModel, isGridView: Boole
                 searchQuery = it
                 viewModel.updateSearchQuery(it)
             },
-            label = { Text("Search") },
+            label = { Text("Search Attendees ...") },
             singleLine = true,
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
+            shape = RoundedCornerShape(12.dp),
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onTertiary) },
+            modifier = Modifier.weight(1f),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onTertiary,
+                cursorColor = MaterialTheme.colorScheme.onTertiary,
+                focusedBorderColor = MaterialTheme.colorScheme.onTertiary,     // Border color when focused
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,   // Border color when not focused
+                focusedLabelColor = MaterialTheme.colorScheme.primaryContainer,
+            )
         )
         // Toggle between Grid and List View
-        IconButton(onClick = onLayoutToggle) {
-            Icon(
-                imageVector = if (isGridView) Icons.Default.List else Icons.Default.GridView,
-                contentDescription = "Toggle View"
+        if (isListButtonVisible){
+            Button(
+                onClick = onLayoutToggle,
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             )
+            {
+                Icon(
+                    imageVector = if (isGridView) Icons.Outlined.Checklist else Icons.Default.GridView,
+                    contentDescription = "Toggle View",
+                    tint = MaterialTheme.colorScheme.primaryContainer,
+                )
+            }
         }
     }
 

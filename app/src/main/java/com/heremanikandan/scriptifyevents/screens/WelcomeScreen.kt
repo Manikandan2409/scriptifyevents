@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -78,7 +79,8 @@ fun WelcomeScreen(navController: NavController) {
                 Log.e("Auth", "User denied additional permissions")
             }
         }
-
+    val density = LocalDensity.current
+    val fontSizeSp = with(density) { 36.dp.toSp() }
 
     Box(
         modifier = Modifier
@@ -106,7 +108,7 @@ fun WelcomeScreen(navController: NavController) {
             contentDescription = "Top Right Decoration",
             modifier = Modifier
                 .size(325.dp)
-                .offset(x=(-210.dp), y =(160).dp)
+                .offset(x=(-210).dp, y =(160).dp)
                 .align(Alignment.TopEnd)
         )
         Image(
@@ -133,7 +135,7 @@ fun WelcomeScreen(navController: NavController) {
             // Heading with Logo
             Text(
                 text = "SCRIPTIFY",
-                fontSize = 42.sp,
+                fontSize = fontSizeSp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Red,
                 fontFamily = FontFamily.SansSerif
@@ -146,7 +148,7 @@ fun WelcomeScreen(navController: NavController) {
             )
             Text(
                 text = "EVENTS",
-                fontSize = 36.sp,
+                fontSize = fontSizeSp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Green,
                 fontFamily = StardosStencil

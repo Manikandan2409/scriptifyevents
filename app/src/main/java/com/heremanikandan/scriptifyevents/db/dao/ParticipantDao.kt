@@ -5,47 +5,36 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.heremanikandan.scriptifyevents.db.dto.DepartmentCount
 import com.heremanikandan.scriptifyevents.db.model.Participant
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ParticipantDao {
-
-    // Insert participant
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertParticipant(participant: Participant) : Long
-
-    // Insert multiple participants
+    @Update
+    suspend fun updateParticipant(participant: Participant)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertParticipants(participants: List<Participant>)
-
-    // Get all participants for a specific event
     @Query("SELECT * FROM participants WHERE eventId = :eventId")
     fun getParticipantsByEventId(eventId: Long): Flow<List<Participant>>
     @Query("SELECT * FROM participants WHERE LOWER(rollNo) = LOWER(:rollNo) AND eventId= :eventId LIMIT 1")
     suspend fun getParticipantByRollNO(rollNo:String,eventId: Long): Participant?
-
-    // Get participant by ID
     @Query("SELECT * FROM participants WHERE id = :participantId")
     suspend fun getParticipantById(participantId: Long): Participant?
-
-    // Delete a participant
     @Delete
     suspend fun deleteParticipant(participant: Participant)
-
-    // Delete all participants for a specific event
     @Query("DELETE FROM participants WHERE eventId = :eventId")
     suspend fun deleteParticipantsByEventId(eventId: Long)
 
-    // Delete all participants
     @Query("DELETE FROM participants")
     suspend fun deleteAllParticipants()
-
     @Query("SELECT COUNT(id) FROM participants WHERE eventId= :eventId")
-    suspend fun getParticipantsCountByEventId(eventId: Long): Long
-
+     fun getParticipantsCountByEventId(eventId: Long):Flow<Long>
     @Query("SELECT course, COUNT(id) as count FROM participants WHERE eventId = :eventId GROUP BY course")
     fun getDepartmentWiseParticipantCount(eventId: Long): Flow<List<DepartmentCount>>
-
+    @Query("SELECT COUNT(DISTINCT course) FROM participants WHERE eventId = :eventId")
+     fun getDistinctCourseCountByEventId(eventId: Long):Flow<Long>
 }

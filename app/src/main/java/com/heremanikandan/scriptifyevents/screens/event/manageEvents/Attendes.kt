@@ -35,20 +35,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.zxing.integration.android.IntentIntegrator
 import com.heremanikandan.scriptifyevents.components.AddAttendanceDialog
+import com.heremanikandan.scriptifyevents.components.AttendanceManageActionButtons
 import com.heremanikandan.scriptifyevents.components.AttendanceSearchAndSortBar
 import com.heremanikandan.scriptifyevents.components.AttendeesGrid
 import com.heremanikandan.scriptifyevents.components.AttendeesList
-import com.heremanikandan.scriptifyevents.components.AttendanceManageActionButtons
 import com.heremanikandan.scriptifyevents.db.dao.ParticipantDao
 import com.heremanikandan.scriptifyevents.db.model.Attendance
 import com.heremanikandan.scriptifyevents.db.model.AttendanceMode
 import com.heremanikandan.scriptifyevents.db.repos.AttendanceRepository
-import com.heremanikandan.scriptifyevents.utils.CaptureActivityPortrait
 import com.heremanikandan.scriptifyevents.sharedPref.SharedPrefManager
+import com.heremanikandan.scriptifyevents.utils.CaptureActivityPortrait
 import com.heremanikandan.scriptifyevents.utils.files.Excel
 import com.heremanikandan.scriptifyevents.viewModel.AttendanceViewModel
 import com.heremanikandan.scriptifyevents.viewModel.factory.AttendanceViewModelFactory
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: AttendanceRepository,participantDao: ParticipantDao) {
@@ -57,7 +58,7 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
 
     )
     val context = LocalContext.current
-    var isGridView by remember { mutableStateOf(true) }
+    var isGridView by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val attendanceList by  viewModel.filteredAttendence.collectAsState()
@@ -189,21 +190,12 @@ fun AttendeesScreen(eventId: Long,eventName:String?, attendanceRepository: Atten
           //   Floating Action Buttons
             AttendanceManageActionButtons(
                 onAddClick = { showDialog = true },
-                onQRClick =  {
-//                    val integrator = IntentIntegrator(context as Activity)
-//                    integrator.setPrompt("Scan a QR code or barcode")
-//                    integrator.setBeepEnabled(true)
-//                    integrator.setOrientationLocked(true)
-//                    integrator.captureActivity = CaptureActivityPortrait::class.java
-//                    launcher.launch(integrator.createScanIntent())
-                             callQRScanner(context,launcher)
-                },
+                onQRClick =  { callQRScanner(context,launcher) },
                 onExportClick = {
                     val fileName = "Attendance_${eventName ?: "Event"}_${System.currentTimeMillis()}.xlsx"
                     createDocumentLauncher.launch(fileName)
                 }
             )
-
         }
 
         if (showDialog) {

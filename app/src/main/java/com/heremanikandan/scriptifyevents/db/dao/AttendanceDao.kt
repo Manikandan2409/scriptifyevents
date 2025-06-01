@@ -38,7 +38,7 @@ interface AttendanceDao {
     fun getAttendanceByEventAndUser(eventId: Long, userId: Long): Flow<List<AttendanceWithParticipantAndUser>>
 
     @Query("SELECT COUNT(id) FROM attendance WHERE eventId = :eventId")
-    fun getAttendanceCountByEventId(eventId: Long) :Long
+    fun getAttendanceCountByEventId(eventId: Long) :Flow<Long>
 
 //    @Transaction
 //    @Query("SELECT * FROM participants WHERE id = :participantId")

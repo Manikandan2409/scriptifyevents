@@ -59,7 +59,7 @@ fun ParticipantsScreen(
 
     val context = LocalContext.current
     val participants by viewModel.filteredParticipants.collectAsState()
-    var isGridView by remember { mutableStateOf(true) }
+    var isGridView by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
 
@@ -83,7 +83,7 @@ fun ParticipantsScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                //.fillMaxSize()
                 .padding(bottom = 72.dp)
         ) {
             ParticipantSearchAndSortBar(viewModel, isGridView) {

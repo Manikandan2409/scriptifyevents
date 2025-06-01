@@ -75,7 +75,6 @@ fun AddEvent(
     val context = LocalContext.current
     val sharedPrefManager = SharedPrefManager(context)
     val localDbEvent  = ScriptyManager.getInstance(context).EventDao()
-    val localReminder = ScriptyManager.getInstance(context).ReminderDao()
     val viewModel: AddEventViewModel = viewModel(factory = AddEventViewModelFactory(localDbEvent))
     val coroutineScope = rememberCoroutineScope()
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
